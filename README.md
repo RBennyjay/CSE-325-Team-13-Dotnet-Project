@@ -1,4 +1,14 @@
-﻿# CSE-325-Team-13-.NET Project
+﻿# Smart Budget – Personal Budget & Expense Tracker
+
+## Project Overview
+
+Managing personal finances can be overwhelming, especially for individuals and families who want to track spending, plan budgets, and understand where their money goes. Many existing budgeting tools are either too complex, expensive, or lack clear visual feedback. 
+
+**Smart Budget** is a simple, user-friendly budgeting and expense tracking application built with the .NET ecosystem. It allows users to log income and expenses, organize spending into categories, and set monthly budgets. The application provides clear summaries, charts, and reports to help users make informed financial decisions.
+
+This project is valuable because it applies real-world software development concepts such as authentication, data persistence, and UI design while solving a common and practical problem.
+
+---
 
 ## Team Members
 
@@ -8,6 +18,10 @@
 | 2 | Pablo Daniel Zabaleta |
 | 3 | Maria Arevalo Narvaez |
 | 4 | Ebenezer Edem John |
+
+---
+
+## Meeting Report: Project Technology Stack & Requirements Discussion
 
 ---Brief Summary of meeting Content---
 
@@ -51,14 +65,103 @@ The team selected this technology stack for its:
 ### Current Week Group Leader
 **Eno-obong Etim Bassey**
 
----Project Management---
+---
 
-**Project Management Tool:** Trello  
-**Trello Board:** [CSE-325 Blazor App Project](https://trello.com/invite/b/6969464105fabb45ae76b6de/ATTI7f4cc512b853064de16da65c1241e30b6AEC2D57/cse-325-blazor-app-project)
+## Target Users
+
+- **Individuals** managing personal finances
+- **Families** tracking household budgets
+- **Students** learning to budget income and expenses
 
 ---
 
-## Application Proposals
+## Project Scope
+
+### Core Features (IN SCOPE):
+- User account creation and login
+- Income logging
+- Expense logging
+- Budget planning by category
+- Spending analytics and summaries
+- Visual reports (charts/graphs)
+- Category management (create/edit/delete categories)
+
+### Features OUT OF SCOPE:
+- Bank account integrations
+- Automatic transaction imports
+- Tax filing or investment tracking
+- Multi-currency support
+- Mobile app (native) development
+
+---
+
+## App Features & User Stories
+
+### User Actions:
+1. Users can create an account and log in securely
+2. Users can add, edit, and delete income entries
+3. Users can add, edit, and delete expense entries
+4. Users can assign expenses to categories
+5. Users can create and manage budget limits
+6. Users can view spending analytics and summaries
+7. Users can view visual reports and charts of their spending
+
+### User Stories:
+1. As a user, I want to track my income so I know how much money I have available.
+2. As a user, I want to log my expenses so I can see where my money goes.
+3. As a user, I want to categorize my expenses so I can analyze my spending habits.
+4. As a user, I want to set a budget so I can avoid overspending.
+5. As a user, I want to view reports and charts so I can better understand my finances.
+
+---
+
+## Technical Specifications
+
+### Data Storage:
+- User account information
+- Income records
+- Expense records
+- Budget categories
+- Budget limits
+
+### Authentication & Security:
+- Users are required to create an account and log in
+- Authentication will be implemented using standard .NET security practices
+- Authentication and authorization for user access
+- Secure storage of user data
+- Restricted access so users can only view their own financial data
+
+### External Services:
+- No external APIs are planned for the initial version
+
+### Device Compatibility:
+- Web-based application
+- Compatible with desktop, tablet, and mobile browsers
+
+### Technology Stack:
+- **Framework:** ASP.NET
+- **Platform:** .NET (latest version)
+- **Programming Language:** C#
+- **Architecture Requirements:** CRUD Operations, Validation, Authentication, Middleware, Authorization
+
+---
+
+## Project Management
+
+**Project Management Tool:** Trello  
+**Trello Board:** [CSE-325 Blazor App Project](https://trello.com/b/BU4WeMet/cse-325-blazor-app-project)
+
+---
+
+## Project Links
+
+**GitHub Repository:** [CSE-325-Team-13-Dotnet-Project](https://github.com/Basseychrist/CSE-325-Team-13-Dotnet-Project)
+
+**Trello Board:** [CSE-325 Blazor App Project](https://trello.com/b/BU4WeMet/cse-325-blazor-app-project)
+
+---
+
+## Application Proposals (SELECTED: #4 - Budget or Expense Tracker)
 
 The team evaluated seven potential project ideas, each with specific features and target audiences:
 
@@ -74,7 +177,7 @@ The team evaluated seven potential project ideas, each with specific features an
 **Features:** Task management, calendar scheduling, notes, study reminders, progress tracking, collaboration tools
 **Target Audience:** Students of all levels seeking to improve organization and academic performance
 
-### 4. Budget or Expense Tracker
+### 4. ✅ Budget or Expense Tracker (SELECTED)
 **Features:** Income and expense logging, budget planning, spending analytics, category management, reports and visualizations
 **Target Audience:** Individuals and families managing personal finances
 
