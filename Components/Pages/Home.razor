@@ -1,7 +1,231 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Smart Budget - Personal Finance Manager</PageTitle>
 
-<h1>Hello, world!</h1>
+<!-- Hero Section -->
+<section class="hero-section bg-primary text-white py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Smart Budget</h1>
+                <p class="lead mb-4">Take Control of Your Finances with Confidence</p>
+                <p class="mb-4">Track your income, manage expenses, and achieve your financial goals with our intuitive budgeting app.</p>
+                <div class="d-flex gap-3">
+                    @if (isAuthenticated)
+                    {
+                        <a href="/dashboard" class="btn btn-light btn-lg">Go to Dashboard</a>
+                        <a href="/logout" class="btn btn-outline-light btn-lg">Logout</a>
+                    }
+                    else
+                    {
+                        <a href="/register" class="btn btn-light btn-lg">Get Started</a>
+                        <a href="/login" class="btn btn-outline-light btn-lg">Sign In</a>
+                    }
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <svg width="300" height="300" viewBox="0 0 300 300" class="img-fluid">
+                        <rect x="30" y="100" width="80" height="120" fill="#FFC107" rx="5"/>
+                        <rect x="120" y="80" width="80" height="140" fill="#28A745" rx="5"/>
+                        <rect x="210" y="110" width="80" height="110" fill="#DC3545" rx="5"/>
+                        <line x1="20" y1="250" x2="290" y2="250" stroke="#999" stroke-width="2"/>
+                        <circle cx="70" cy="90" r="8" fill="#FFC107"/>
+                        <circle cx="160" cy="50" r="8" fill="#28A745"/>
+                        <circle cx="250" cy="95" r="8" fill="#DC3545"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-Welcome to your new app.
+<!-- Features Section -->
+<section class="features-section py-5 mb-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Key Features</h2>
+        <div class="row g-4">
+            <!-- Feature 1 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100 feature-card">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3" style="font-size: 2.5rem;">💰</div>
+                        <h5 class="card-title">Income Tracking</h5>
+                        <p class="card-text text-muted">Log and monitor all your income sources in one place</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100 feature-card">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3" style="font-size: 2.5rem;">📊</div>
+                        <h5 class="card-title">Expense Management</h5>
+                        <p class="card-text text-muted">Track expenses and understand your spending habits</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100 feature-card">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3" style="font-size: 2.5rem;">🎯</div>
+                        <h5 class="card-title">Budget Planning</h5>
+                        <p class="card-text text-muted">Set spending limits and avoid overspending by category</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100 feature-card">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3" style="font-size: 2.5rem;">📈</div>
+                        <h5 class="card-title">Analytics & Reports</h5>
+                        <p class="card-text text-muted">Visualize trends and make informed financial decisions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Benefits Section -->
+<section class="benefits-section py-5 mb-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Why Choose Smart Budget?</h2>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="d-flex gap-3">
+                    <div>
+                        <div class="badge bg-primary rounded-pill p-2" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">✓</div>
+                    </div>
+                    <div>
+                        <h5>Easy to Use</h5>
+                        <p class="text-muted">Intuitive interface that makes budgeting effortless</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="d-flex gap-3">
+                    <div>
+                        <div class="badge bg-success rounded-pill p-2" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">✓</div>
+                    </div>
+                    <div>
+                        <h5>Secure</h5>
+                        <p class="text-muted">Your financial data is protected with industry-standard security</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="d-flex gap-3">
+                    <div>
+                        <div class="badge bg-info rounded-pill p-2" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">✓</div>
+                    </div>
+                    <div>
+                        <h5>Real-time Insights</h5>
+                        <p class="text-muted">Get instant feedback on your spending and budget status</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="d-flex gap-3">
+                    <div>
+                        <div class="badge bg-warning rounded-pill p-2" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">✓</div>
+                    </div>
+                    <div>
+                        <h5>Detailed Reports</h5>
+                        <p class="text-muted">Comprehensive analytics to understand your financial patterns</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="mb-4">Ready to Take Control of Your Money?</h2>
+        @if (!isAuthenticated)
+        {
+            <p class="lead mb-4">Join thousands of users already managing their finances smarter</p>
+            <a href="/register" class="btn btn-light btn-lg">Create Your Free Account</a>
+        }
+        else
+        {
+            <p class="lead mb-4">Start tracking your finances today!</p>
+            <a href="/dashboard" class="btn btn-light btn-lg">Go to Dashboard</a>
+        }
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-dark text-white py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <h6>Smart Budget</h6>
+                <p class="small text-muted">Your personal finance management companion</p>
+            </div>
+            <div class="col-md-4 mb-3">
+                <h6>Features</h6>
+                <ul class="list-unstyled small">
+                    <li><a href="#" class="text-muted text-decoration-none">Income Tracking</a></li>
+                    <li><a href="#" class="text-muted text-decoration-none">Expense Management</a></li>
+                    <li><a href="#" class="text-muted text-decoration-none">Budget Planning</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4 mb-3">
+                <h6>Legal</h6>
+                <ul class="list-unstyled small">
+                    <li><a href="#" class="text-muted text-decoration-none">Privacy Policy</a></li>
+                    <li><a href="#" class="text-muted text-decoration-none">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        <hr class="bg-secondary">
+        <div class="text-center small text-muted">
+            <p>&copy; 2026 Smart Budget. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    }
+
+    .feature-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .feature-icon {
+        transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover .feature-icon {
+        transform: scale(1.1);
+    }
+</style>
+
+@code {
+    private bool isAuthenticated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+    }
+}

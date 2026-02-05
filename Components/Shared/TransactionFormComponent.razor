@@ -1,0 +1,65 @@
+@namespace SmartBudget.Components.Shared
+@using System.ComponentModel.DataAnnotations
+
+<EditForm Model="Model">
+    <DataAnnotationsValidator />
+    <div class="mb-3">
+        <label for="amountInput" class="form-label">Amount</label>
+        <div class="input-group">
+            <span class="input-group-text">$</span>
+            <InputNumber @bind-Value="Model.Amount" class="form-control" id="amountInput" placeholder="0.00" />
+        </div>
+        <ValidationMessage For="@(() => Model.Amount)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="dateInput" class="form-label">Date</label>
+        <InputDate @bind-Value="Model.Date" class="form-control" id="dateInput" />
+        <ValidationMessage For="@(() => Model.Date)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="descriptionInput" class="form-label">Description</label>
+        <InputText @bind-Value="Model.Description" class="form-control" id="descriptionInput" placeholder="Optional notes" />
+        <ValidationMessage For="@(() => Model.Description)" />
+    </div>
+
+    <button type="button" class="btn btn-primary" @onclick="HandleSubmit">@ButtonText</button>
+    <button type="button" class="btn btn-secondary" @onclick="HandleCancel">Cancel</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public TransactionFormModel Model { get; set; } = new();
+
+    [Parameter]
+    public string ButtonText { get; set; } = "Submit";
+
+    [Parameter]
+    public EventCallback OnSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private async Task HandleSubmit()
+    {
+        await OnSubmit.InvokeAsync();
+    }
+
+    private async Task HandleCancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+
+    public class TransactionFormModel
+    {
+        [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than 0")]
+        public decimal Amount { get; set; }
+
+        [Required(ErrorMessage = "Date is required")]
+        public DateTime Date { get; set; } = DateTime.Today;
+
+        [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
+        public string? Description { get; set; }
+    }
+}

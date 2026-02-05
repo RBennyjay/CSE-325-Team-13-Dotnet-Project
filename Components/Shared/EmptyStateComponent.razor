@@ -1,0 +1,20 @@
+@namespace SmartBudget.Components.Shared
+
+<div class="alert alert-info">
+    <p>@Message</p>
+    @if (!string.IsNullOrEmpty(ActionText))
+    {
+        <button class="btn btn-sm btn-primary" @onclick="OnAction">@ActionText</button>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Message { get; set; } = "No data available.";
+
+    [Parameter]
+    public string? ActionText { get; set; }
+
+    [Parameter]
+    public EventCallback OnAction { get; set; }
+}
