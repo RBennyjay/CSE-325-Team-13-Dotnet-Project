@@ -51,13 +51,10 @@ The team selected this technology stack for its:
 ### Current Week Group Leader
 **Eno-obong Etim Bassey**
 
-
 ---Project Management---
 
 **Project Management Tool:** Trello  
 **Trello Board:** [CSE-325 Blazor App Project](https://trello.com/invite/b/6969464105fabb45ae76b6de/ATTI7f4cc512b853064de16da65c1241e30b6AEC2D57/cse-325-blazor-app-project)
-
-
 
 ---
 
@@ -92,5 +89,3 @@ The team evaluated seven potential project ideas, each with specific features an
 ### 7. Simple Inventory or Task Management App
 **Features:** Item tracking, inventory counts, task assignment, status updates, alerts for low stock, basic reporting
 **Target Audience:** Small businesses, warehouses, and teams needing simple task organization
-
-
