@@ -1,0 +1,225 @@
+@page "/spending-summary"
+@using SmartBudget.DTOs
+@using SmartBudget.Interfaces
+@inject IExpenseService ExpenseService
+@inject ICategoryService CategoryService
+@inject IBudgetService BudgetService
+
+<PageTitle>Spending Summary</PageTitle>
+
+<div class="container py-4">
+    <h2 class="mb-3">Spending Summary</h2>
+
+    @if (!string.IsNullOrWhiteSpace(error))
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Month</label>
+                    <select class="form-select" @bind="selectedMonth" disabled="@isBusy">
+                        @for (int m = 1; m <= 12; m++)
+                        {
+                            <option value="@m">@MonthName(m)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Year</label>
+                    <input class="form-control" type="number" min="2000" max="2100"
+                           @bind="selectedYear" disabled="@isBusy" />
+                </div>
+
+                <div class="col-md-3 d-grid">
+                    <button class="btn btn-primary" @onclick="LoadSummary" disabled="@isBusy">
+                        @(isBusy ? "Loading..." : "Refresh")
+                    </button>
+                </div>
+
+                <div class="col-md-3 text-md-end">
+                    <div class="fw-semibold">Total Spent</div>
+                    <div class="fs-5">@totalSpent.ToString("C")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title mb-3">@MonthName(selectedMonth) @selectedYear</h5>
+
+            @if (isBusy && rows.Count == 0)
+            {
+                <p class="text-muted mb-0">Loading...</p>
+            }
+            else if (rows.Count == 0)
+            {
+                <p class="text-muted mb-0">No spending found for this month.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th class="text-end">Spent</th>
+                                <th class="text-end">Budget</th>
+                                <th class="text-end">Remaining</th>
+                                <th class="text-end">% Used</th>
+                                <th class="text-end">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in rows.OrderByDescending(x => x.Spent))
+                            {
+                                <tr>
+                                    <td>@r.CategoryName</td>
+                                    <td class="text-end">@r.Spent.ToString("C")</td>
+                                    <td class="text-end">@((r.BudgetLimit is null) ? "-" : r.BudgetLimit.Value.ToString("C"))</td>
+                                    <td class="text-end">@((r.BudgetLimit is null) ? "-" : r.Remaining!.Value.ToString("C"))</td>
+                                    <td class="text-end">@((r.BudgetLimit is null) ? "-" : $"{r.PercentUsed:0}%")</td>
+                                    <td class="text-end">
+                                        @if (r.BudgetLimit is null)
+                                        {
+                                            <span class="badge text-bg-secondary">No Budget</span>
+                                        }
+                                        else if (r.Remaining < 0)
+                                        {
+                                            <span class="badge text-bg-danger">Over</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge text-bg-success">OK</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="fw-semibold">
+                                <td>Total</td>
+                                <td class="text-end">@totalSpent.ToString("C")</td>
+                                <td class="text-end">@totalBudget.ToString("C")</td>
+                                <td class="text-end">@((totalBudget - totalSpent).ToString("C"))</td>
+                                <td class="text-end">
+                                    @((totalBudget > 0) ? $"{(totalSpent / totalBudget) * 100m:0}%" : "-")
+                                </td>
+                                <td class="text-end"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    // TEMP until login UI is merged:
+    private const string userId = "dev-user-123";
+
+    private bool isBusy;
+    private string error = "";
+
+    private int selectedMonth;
+    private int selectedYear;
+
+    private decimal totalSpent;
+    private decimal totalBudget;
+
+    private List<SummaryRow> rows = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var now = DateTime.Now;
+        selectedMonth = now.Month;
+        selectedYear = now.Year;
+
+        await LoadSummary();
+    }
+
+    private async Task LoadSummary()
+    {
+        try
+        {
+            isBusy = true;
+            error = "";
+            rows.Clear();
+
+            totalSpent = 0;
+            totalBudget = 0;
+
+            // Categories
+            var categories = await CategoryService.GetCategoriesByUserAsync(userId);
+
+            // Budgets for month/year
+            var budgets = (await BudgetService.GetUserBudgetsAsync(userId))
+                .Where(b => b.Month == selectedMonth && b.Year == selectedYear)
+                .ToList();
+
+            // Expenses already filtered by month/year via your service
+            var expenses = await ExpenseService.GetExpensesByUserAsync(userId, selectedMonth, selectedYear);
+
+            // Total spent by category
+            var spentByCategory = expenses
+                .GroupBy(e => e.CategoryId)
+                .ToDictionary(g => g.Key, g => g.Sum(x => x.Amount));
+
+            // Show categories that have spending OR have a budget
+            var categoryIds = new HashSet<int>();
+            foreach (var id in spentByCategory.Keys) categoryIds.Add(id);
+            foreach (var b in budgets) categoryIds.Add(b.CategoryId);
+
+            foreach (var categoryId in categoryIds)
+            {
+                var categoryName = categories.FirstOrDefault(c => c.Id == categoryId)?.Name ?? $"Category #{categoryId}";
+                var spent = spentByCategory.TryGetValue(categoryId, out var s) ? s : 0m;
+
+                var budget = budgets.FirstOrDefault(b => b.CategoryId == categoryId);
+
+                decimal? limit = budget?.LimitAmount;
+                decimal? remaining = (limit is null) ? null : (limit.Value - spent);
+                decimal percent = (limit is null || limit.Value <= 0) ? 0 : (spent / limit.Value) * 100m;
+
+                rows.Add(new SummaryRow
+                {
+                    CategoryId = categoryId,
+                    CategoryName = categoryName,
+                    Spent = spent,
+                    BudgetLimit = limit,
+                    Remaining = remaining,
+                    PercentUsed = percent
+                });
+
+                totalSpent += spent;
+                if (limit is not null) totalBudget += limit.Value;
+            }
+        }
+        catch (Exception ex)
+        {
+            error = $"Could not load summary: {ex.Message}";
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private static string MonthName(int m)
+        => new DateTime(2000, m, 1).ToString("MMMM");
+
+    private class SummaryRow
+    {
+        public int CategoryId { get; set; }
+        public string CategoryName { get; set; } = "";
+        public decimal Spent { get; set; }
+        public decimal? BudgetLimit { get; set; }
+        public decimal? Remaining { get; set; }
+        public decimal PercentUsed { get; set; }
+    }
+}

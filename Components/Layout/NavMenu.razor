@@ -1,37 +1,33 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">SmartBudget</a>
-    </div>
-</div>
+﻿<nav class="nav flex-column">
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-    @* <NavLink class="nav-link" href="expenses"> *@
-    <NavLink class="nav-link" href="/expenses">
-        <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Expenses
-    </NavLink>
+    <div class="nav-item px-3">
+        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+            <span class="bi bi-house-door-fill-nav-menu"></span> Home
+        </NavLink>
     </div>
 
-        @* <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div> *@
+    <div class="nav-item px-3">
+        <NavLink class="nav-link" href="expenses">
+            <span class="bi bi-plus-square-fill-nav-menu"></span> Expenses
+        </NavLink>
+    </div>
 
-        @* <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div> *@
-    </nav>
-</div>
+    <div class="nav-item px-3">
+        <NavLink class="nav-link" href="categories">
+            <span class="bi bi-tags"></span> Categories
+        </NavLink>
+    </div>
 
+    <div class="nav-item px-3">
+        <NavLink class="nav-link" href="budgets">
+            <span class="bi bi-wallet2"></span> Budgets
+        </NavLink>
+    </div>
+
+    <div class="nav-item px-3">
+        <NavLink class="nav-link" href="spending-summary">
+            <span class="bi bi-bar-chart"></span> Spending Summary
+        </NavLink>
+    </div>
+
+</nav>
