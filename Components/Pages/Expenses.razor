@@ -1,0 +1,274 @@
+@page "/expenses"
+@rendermode InteractiveServer
+@using SmartBudget.Models
+@using SmartBudget.DTOs
+@using SmartBudget.Interfaces
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+@* @attribute [Authorize] *@
+@inject IExpenseService ExpenseService
+@* Rename the injected provider to avoid a conflict with the Class Name *@
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Expenses - Smart Budget</PageTitle>
+
+<p class="mb-0 opacity-75">Logged in as: <strong>@userId</strong> (Dev Mode)</p>
+
+<section class="expense-header text-white py-4 mb-4 shadow-sm">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold mb-0">Expense Management</h2>
+                <p class="mb-0 opacity-75">Track where your money is going in real-time</p>
+            </div>
+            <div class="header-icon" style="font-size: 2.5rem;">📊</div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold mb-4">Log New Expense</h5>
+
+                    @* Add FormName="AddExpenseForm" here *@
+                    <EditForm Model="newExpense" OnValidSubmit="HandleAddExpense" FormName="AddExpenseForm">
+                        <DataAnnotationsValidator />                   
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Description</label>
+                            <InputText @bind-Value="newExpense.Description"
+                                       class="form-control form-control-lg bg-light border-0"
+                                       placeholder="e.g. Weekly Groceries" />
+                            <ValidationMessage For="@(() => newExpense.Description)" class="text-danger small" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0 fw-bold">$</span>
+                                <InputNumber @bind-Value="newExpense.Amount"
+                                             class="form-control form-control-lg bg-light border-0" placeholder="0.00" />
+                            </div>
+                            <ValidationMessage For="@(() => newExpense.Amount)" class="text-danger small" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Category</label>
+                            <InputSelect @bind-Value="newExpense.CategoryId"
+                                         class="form-select form-select-lg bg-light border-0">
+                                <option value="0">Select Category...</option>
+                                @foreach (var cat in categories)
+                                {
+                                    <option value="@cat.Id">@cat.Name</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => newExpense.CategoryId)" class="text-danger small" />
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-muted">Date</label>
+                            <InputDate @bind-Value="newExpense.Date"
+                                       class="form-control form-control-lg bg-light border-0" />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm">
+                            Add Expense
+                        </button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">Recent Transactions</h5>
+                    @* Updated to use the variable fetched in LoadData *@
+                    <span class="badge bg-primary-soft text-primary">Monthly Total: @monthlyTotal.ToString("C")</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4 border-0">Date</th>
+                                    <th class="border-0">Description</th>
+                                    <th class="border-0">Category</th>
+                                    <th class="text-end border-0">Amount</th>
+                                    <th class="text-center border-0 pe-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (userExpenses == null || !userExpenses.Any())
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5">
+                                            <div class="text-muted">No expenses found. Your budget is looking empty!</div>
+                                        </td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    @foreach (var expense in userExpenses)
+                                    {
+                                        <tr>
+                                            <td class="ps-4 text-muted small">@expense.Date.ToShortDateString()</td>
+                                            <td>
+                                                <div class="fw-bold text-dark">@expense.Description</div>
+                                            </td>
+                                            <td>
+                                                @* Fix: Using CategoryName from DTO instead of Category.Name *@
+                                                <span class="badge bg-info-subtle text-info border border-info-subtle px-3 py-2 rounded-pill">
+                                                    @expense.CategoryName
+                                                </span>
+                                            </td>
+                                            <td class="text-end fw-bold text-danger">
+                                                -@expense.Amount.ToString("C")
+                                            </td>
+                                            <td class="text-center pe-4">
+                                                <button class="btn btn-sm btn-outline-danger border-0 rounded-circle"
+                                                        @onclick="() => DeleteExpense(expense.Id)" title="Delete">
+                                                    🗑️
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #f0f2f5;
+    }
+
+    .expense-header {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    }
+
+    .bg-primary-soft {
+        background-color: #e7f1ff;
+    }
+
+    .bg-info-subtle {
+        background-color: #e1f5fe;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.1);
+    }
+
+    .table tr {
+        transition: background-color 0.2s ease;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f8f9ff !important;
+    }
+
+    .header-icon {
+        transition: transform 0.3s ease;
+    }
+
+    .expense-header:hover .header-icon {
+        transform: rotate(10deg) scale(1.1);
+    }
+</style>
+
+    @code {
+        private List<ExpenseDto> userExpenses = new();
+        private List<Category> categories = new();
+        private CreateExpenseDto newExpense = new() { Date = DateTime.Now };
+        private decimal monthlyTotal;
+        private string? userId;
+
+        protected override async Task OnInitializedAsync()
+        {
+            // 1. HARDCODE THE ID HERE
+            // Use any string you like. This ID will own the expenses in your DB.
+            userId = "dev-user-123";
+
+            // 2. BYPASS THE AUTH CHECK
+            /* var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            */
+
+            // 3. PROCEED TO LOAD DATA
+            if (!string.IsNullOrEmpty(userId))
+            {
+                await LoadData();
+            }
+        }
+
+
+    private async Task LoadData()
+    {
+        categories = await ExpenseService.GetCategoriesAsync();
+        userExpenses = await ExpenseService.GetExpensesByUserAsync(userId!);
+
+        monthlyTotal = await ExpenseService.GetTotalExpensesByUserAsync(
+            userId!,
+            DateTime.Now.Month,
+            DateTime.Now.Year
+        );
+    }
+
+
+
+    private async Task HandleAddExpense()
+    {
+        Console.WriteLine("--- HandleAddExpense Triggered ---");
+
+        if (newExpense.CategoryId == 0)
+        {
+            Console.WriteLine("Abort: Category is 0");
+            return;
+        }
+
+        try
+        {
+            var result = await ExpenseService.CreateExpenseAsync(userId!, newExpense);
+            @* var result = await ExpenseService.CreateExpenseAsync(null, newExpense); *@
+
+            Console.WriteLine($"Saved Expense ID: {result.Id}");
+
+            newExpense = new CreateExpenseDto { Date = DateTime.Now };
+            await LoadData();
+            Console.WriteLine($"Data Reloaded. Total Count: {userExpenses.Count}");
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"DATABASE ERROR: {ex.Message}");
+        }
+    }
+
+
+
+    private async Task DeleteExpense(int id)
+    {
+        try
+        {
+            await ExpenseService.DeleteExpenseAsync(id, userId!);
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting expense: {ex.Message}");
+        }
+    }
+}
