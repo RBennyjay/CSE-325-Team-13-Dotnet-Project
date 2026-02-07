@@ -60,19 +60,24 @@
     }
 
     .nav-item ::deep .nav-link {
-        color: #d7d7d7;
-        background: none;
-        border: none;
-        border-radius: 4px;
-        height: 3rem;
-        display: flex;
-        align-items: center;
-        line-height: 3rem;
-        width: 100%;
-    }
+    color: #d7d7d7;
+    background: none;
+    border: none;
+    border-radius: 8px;
+
+    /* ✅ make the clickable/highlight box larger */
+    padding: 12px 14px;
+    min-height: 3.25rem;
+
+    display: flex;
+    align-items: center;
+    width: 100%;
+    line-height: 1.2;
+}
+
 
 .nav-item ::deep a.active {
-    background-color: rgba(255,255,255,0.37);
+    background-color: rgba(255,255,255,0.22);
     color: white;
 }
 
@@ -81,6 +86,10 @@
     color: white;
 }
 
+.nav-item {
+    font-size: 0.9rem;
+    padding-bottom: 0.25rem; /* was 0.5rem */
+}
 .nav-scrollable {
     display: none;
 }

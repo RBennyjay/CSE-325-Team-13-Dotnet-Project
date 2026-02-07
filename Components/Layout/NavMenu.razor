@@ -1,4 +1,4 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">SmartBudget</a>
     </div>
@@ -20,13 +20,31 @@
             </NavLink>
         </div>
 
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="categories">
+                <span class="bi bi-tags-fill-nav-menu" aria-hidden="true"></span> Categories
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="budgets">
+                <span class="bi bi-wallet2-nav-menu" aria-hidden="true"></span> Budgets
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="spending-summary">
+                <span class="bi bi-bar-chart-nav-menu" aria-hidden="true"></span> Spending Summary
+            </NavLink>
+        </div>
+
         <AuthorizeView>
             <Authorized>
                 <div class="nav-item px-3">
                     <form action="Account/Logout" method="post">
                         <AntiforgeryToken />
                         <input type="hidden" name="ReturnUrl" value="" />
-                        <button type="submit" class="nav-link" style="background:none; border:none; width:100%; text-align:left; padding:0.5rem 1rem;">
+                        <button type="submit" class="nav-link" style="background:none; border:none; width:100%; text-align:left; padding:0.5rem 1rem; color: inherit;">
                             <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
                         </button>
                     </form>

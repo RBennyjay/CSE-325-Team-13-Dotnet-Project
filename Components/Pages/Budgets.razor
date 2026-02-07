@@ -1,0 +1,347 @@
+@page "/budgets"
+@using SmartBudget.DTOs
+@using SmartBudget.Interfaces
+@using SmartBudget.Services
+@using Microsoft.JSInterop
+@inject IBudgetService BudgetService
+@inject ICategoryService CategoryService
+@inject IJSRuntime JS
+
+<PageTitle>Budgets</PageTitle>
+
+<div class="container py-4">
+    <h2 class="mb-3">Budgets</h2>
+
+    @if (!string.IsNullOrWhiteSpace(error))
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(message))
+    {
+        <div class="alert alert-success">@message</div>
+    }
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title mb-3">@((editingId is null) ? "Add Budget" : "Edit Budget")</h5>
+
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" @bind="form.CategoryId" disabled="@isBusy">
+                        <option value="0">Select a category...</option>
+                        @foreach (var c in categories)
+                        {
+                            <option value="@c.Id">@c.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Month</label>
+                    <input class="form-control" type="number" min="1" max="12"
+                           @bind="form.Month" disabled="@isBusy" />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Year</label>
+                    <input class="form-control" type="number" min="2000" max="2100"
+                           @bind="form.Year" disabled="@isBusy" />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Limit</label>
+                    <input class="form-control" type="number" step="0.01" min="0"
+                           @bind="form.LimitAmount" disabled="@isBusy" />
+                </div>
+
+                <div class="col-md-2 d-grid">
+                    @if (editingId is null)
+                    {
+                        <button class="btn btn-primary" @onclick="SaveNew" disabled="@isBusy">
+                            Save
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-success" @onclick="SaveEdit" disabled="@isBusy">
+                            Update
+                        </button>
+                    }
+                </div>
+            </div>
+
+            @if (editingId is not null)
+            {
+                <div class="mt-2">
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="CancelEdit" disabled="@isBusy">
+                        Cancel Edit
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Your Budgets</h5>
+
+            @if (isBusy && budgets.Count == 0)
+            {
+                <p class="text-muted mb-0">Loading...</p>
+            }
+            else if (budgets.Count == 0)
+            {
+                <p class="text-muted mb-0">No budgets yet.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Month</th>
+                                <th>Year</th>
+                                <th>Limit</th>
+                                <th>Remaining</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var b in budgets)
+                            {
+                                <tr>
+                                    <td>@GetCategoryName(b.CategoryId)</td>
+                                    <td>@b.Month</td>
+                                    <td>@b.Year</td>
+                                    <td>@b.LimitAmount.ToString("C")</td>
+                                    <td>@(remainingByBudgetId.TryGetValue(b.Id, out var r) ? r.ToString("C") : "...")</td>
+                                    <td class="text-end">
+                                        <button class="btn btn-outline-primary btn-sm me-2"
+                                                @onclick="() => StartEdit(b)" disabled="@isBusy">
+                                            Edit
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm"
+                                                @onclick="() => Delete(b)" disabled="@isBusy">
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    // TEMP until login UI is merged:
+    private const string userId = "dev-user-123";
+
+    private bool isBusy;
+    private string message = "";
+    private string error = "";
+
+    private List<CategoryDto> categories = new();
+    private List<BudgetDto> budgets = new();
+
+    private BudgetDto form = new();
+    private int? editingId = null;
+
+    // Remaining budget per budgetId
+    private Dictionary<int, decimal> remainingByBudgetId = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var now = DateTime.Now;
+        form.Month = now.Month;
+        form.Year = now.Year;
+
+        await LoadAll();
+    }
+
+    private async Task LoadAll()
+    {
+        try
+        {
+            isBusy = true;
+            error = "";
+            message = "";
+
+            categories = await CategoryService.GetCategoriesByUserAsync(userId);
+
+            var budgetList = await BudgetService.GetUserBudgetsAsync(userId);
+            budgets = budgetList.ToList();
+
+            remainingByBudgetId.Clear();
+            foreach (var b in budgets)
+            {
+                try
+                {
+                    remainingByBudgetId[b.Id] = await BudgetService.GetRemainingBudgetAsync(b.Id, userId);
+                }
+                catch
+                {
+                    remainingByBudgetId[b.Id] = 0;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            error = $"Could not load budgets: {ex.Message}";
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private async Task SaveNew()
+    {
+        // Clear old alerts
+        error = "";
+        message = "";
+
+        if (form.CategoryId <= 0)
+        {
+            error = "Please select a category.";
+            return;
+        }
+        if (form.Month < 1 || form.Month > 12)
+        {
+            error = "Month must be between 1 and 12.";
+            return;
+        }
+        if (form.Year < 2000 || form.Year > 2100)
+        {
+            error = "Year must be reasonable (2000–2100).";
+            return;
+        }
+        if (form.LimitAmount <= 0)
+        {
+            error = "Limit must be greater than 0.";
+            return;
+        }
+
+        // Prevent duplicates (same category + month + year)
+        if (budgets.Any(x => x.CategoryId == form.CategoryId &&
+                             x.Month == form.Month &&
+                             x.Year == form.Year))
+        {
+            error = "You already have a budget for this category and month.";
+            return;
+        }
+
+        try
+        {
+            isBusy = true;
+
+            await BudgetService.CreateBudgetAsync(form, userId);
+
+            message = "Budget created.";
+            form = new BudgetDto { Month = form.Month, Year = form.Year }; // keep month/year
+            await LoadAll();
+        }
+        catch (Exception ex)
+        {
+            error = $"Could not create budget: {ex.Message}";
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private void StartEdit(BudgetDto b)
+    {
+        editingId = b.Id;
+        form = new BudgetDto
+        {
+            Id = b.Id,
+            CategoryId = b.CategoryId,
+            LimitAmount = b.LimitAmount,
+            Month = b.Month,
+            Year = b.Year
+        };
+
+        error = "";
+        message = "";
+    }
+
+    private void CancelEdit()
+    {
+        editingId = null;
+
+        var now = DateTime.Now;
+        form = new BudgetDto { Month = now.Month, Year = now.Year };
+
+        error = "";
+        message = "";
+    }
+
+    private async Task SaveEdit()
+    {
+        if (editingId is null) return;
+
+        // Clear old alerts
+        error = "";
+        message = "";
+
+        if (form.LimitAmount <= 0)
+        {
+            error = "Limit must be greater than 0.";
+            return;
+        }
+
+        try
+        {
+            isBusy = true;
+
+            await BudgetService.UpdateBudgetAsync(editingId.Value, form, userId);
+
+            message = "Budget updated.";
+            CancelEdit();
+            await LoadAll();
+        }
+        catch (Exception ex)
+        {
+            error = $"Could not update budget: {ex.Message}";
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private async Task Delete(BudgetDto b)
+    {
+        if (!await JS.InvokeAsync<bool>("confirm", $"Delete budget for {GetCategoryName(b.CategoryId)}?"))
+            return;
+
+        try
+        {
+            isBusy = true;
+            error = "";
+            message = "";
+
+            await BudgetService.DeleteBudgetAsync(b.Id, userId);
+
+            message = "Budget deleted.";
+            await LoadAll();
+        }
+        catch (Exception ex)
+        {
+            error = $"Could not delete budget: {ex.Message}";
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private string GetCategoryName(int categoryId)
+        => categories.FirstOrDefault(c => c.Id == categoryId)?.Name ?? $"Category #{categoryId}";
+}

@@ -1,0 +1,262 @@
+@page "/categories"
+@using SmartBudget.DTOs
+@using SmartBudget.Services
+
+@inject ICategoryService CategoryService
+
+<PageTitle>Categories</PageTitle>
+
+<div class="container py-4">
+    <h2 class="mb-3">Categories</h2>
+
+    @if (!string.IsNullOrWhiteSpace(error))
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(message))
+    {
+        <div class="alert alert-success">@message</div>
+    }
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Add Category</h5>
+
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <input class="form-control" placeholder="Name"
+                           @bind="newCategory.Name" />
+                </div>
+                <div class="col-md-5">
+                    <input class="form-control" placeholder="Description (optional)"
+                           @bind="newCategory.Description" />
+                </div>
+                <div class="col-md-2">
+                    <input class="form-control" placeholder="Color (e.g. #22c55e)"
+                           @bind="newCategory.Color" />
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button class="btn btn-primary" @onclick="AddCategory" disabled="@isBusy">
+                        Add
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Your Categories</h5>
+
+            @if (isBusy && categories.Count == 0)
+            {
+                <p class="text-muted mb-0">Loading...</p>
+            }
+            else if (categories.Count == 0)
+            {
+                <p class="text-muted mb-0">No categories yet.</p>
+            }
+            else
+            {
+                <ul class="list-group">
+                    @foreach (var c in categories)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            @if (editingId == c.Id)
+                            {
+                                <div class="w-100">
+                                    <div class="row g-2">
+                                        <div class="col-md-4">
+                                            <input class="form-control" @bind="editCategory.Name" />
+                                        </div>
+                                        <div class="col-md-5">
+                                            <input class="form-control" @bind="editCategory.Description" />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <input class="form-control" @bind="editCategory.Color" />
+                                        </div>
+                                        <div class="col-md-1 d-grid">
+                                            <button class="btn btn-success btn-sm" @onclick="SaveEdit" disabled="@isBusy">
+                                                Save
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-2 d-flex gap-2">
+                                        <button class="btn btn-outline-secondary btn-sm" @onclick="CancelEdit" disabled="@isBusy">Cancel</button>
+                                        <button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteCategory(c)" disabled="@isBusy">Delete</button>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div>
+                                    <div class="fw-semibold">@c.Name</div>
+                                    @if (!string.IsNullOrWhiteSpace(c.Description))
+                                    {
+                                        <div class="text-muted small">@c.Description</div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(c.Color))
+                                    {
+                                        <div class="small">Color: <span class="text-muted">@c.Color</span></div>
+                                    }
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline-primary btn-sm" @onclick="() => StartEdit(c)" disabled="@isBusy">Edit</button>
+                                    <button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteCategory(c)" disabled="@isBusy">Delete</button>
+                                </div>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    // TEMP: until auth is wired, use a placeholder userId.
+    // Later, replace with the real logged-in user id.
+    private const string userId = "dev-user-123";
+
+    private List<CategoryDto> categories = new();
+    private bool isBusy;
+    private string message = "";
+    private string error = "";
+
+    private CreateCategoryDto newCategory = new();
+
+    private int? editingId = null;
+    private CreateCategoryDto editCategory = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategories();
+    }
+
+    private async Task LoadCategories()
+    {
+        try
+        {
+            isBusy = true;
+            error = "";
+            message = "";
+            categories = await CategoryService.GetCategoriesByUserAsync(userId);
+        }
+        catch (Exception ex)
+        {
+            error = $"Could not load categories: {ex.Message}";
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private async Task AddCategory()
+    {
+        if (string.IsNullOrWhiteSpace(newCategory.Name))
+        {
+            error = "Category name is required.";
+            return;
+        }
+
+        try
+        {
+            isBusy = true;
+            error = "";
+            message = "";
+
+            await CategoryService.CreateCategoryAsync(userId, newCategory);
+
+            newCategory = new CreateCategoryDto();
+            message = "Category added.";
+            await LoadCategories();
+        }
+        catch (Exception ex)
+        {
+            error = $"Could not add category: {ex.Message}";
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private void StartEdit(CategoryDto c)
+    {
+        editingId = c.Id;
+        editCategory = new CreateCategoryDto
+        {
+            Name = c.Name,
+            Description = c.Description,
+            Color = c.Color
+        };
+        error = "";
+        message = "";
+    }
+
+    private void CancelEdit()
+    {
+        editingId = null;
+        editCategory = new CreateCategoryDto();
+        error = "";
+        message = "";
+    }
+
+    private async Task SaveEdit()
+    {
+        if (editingId is null) return;
+
+        if (string.IsNullOrWhiteSpace(editCategory.Name))
+        {
+            error = "Category name is required.";
+            return;
+        }
+
+        try
+        {
+            isBusy = true;
+            error = "";
+            message = "";
+
+            await CategoryService.UpdateCategoryAsync(editingId.Value, userId, editCategory);
+
+            message = "Category updated.";
+            CancelEdit();
+            await LoadCategories();
+        }
+        catch (Exception ex)
+        {
+            error = $"Could not update category: {ex.Message}";
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private async Task DeleteCategory(CategoryDto c)
+    {
+        try
+        {
+            isBusy = true;
+            error = "";
+            message = "";
+
+            await CategoryService.DeleteCategoryAsync(c.Id, userId);
+
+            message = "Category deleted.";
+            await LoadCategories();
+        }
+        catch (Exception ex)
+        {
+            error = $"Could not delete category: {ex.Message}";
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+}
