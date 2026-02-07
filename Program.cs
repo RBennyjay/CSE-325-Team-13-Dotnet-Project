@@ -41,6 +41,9 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 // REGISTER YOUR EXPENSE SERVICE HERE:
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IBudgetService, BudgetService>();
+
 var app = builder.Build();
 
 
