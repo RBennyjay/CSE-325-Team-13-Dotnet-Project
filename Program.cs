@@ -7,8 +7,13 @@ using SmartBudget.Repositories;
 // ADD THESE TWO LINES:
 using SmartBudget.Interfaces;
 using SmartBudget.Services;
+//account
+using Microsoft.AspNetCore.Components.Authorization;
+using SmartBudget.Components.Account;
 
 using Microsoft.EntityFrameworkCore.Diagnostics;
+// OS DETECTION (MACOS/WINDOWS):
+using System.Runtime.InteropServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,9 +25,12 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Add Identity
-builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddSignInManager()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -33,6 +41,9 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 // REGISTER YOUR EXPENSE SERVICE HERE:
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
+
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IBudgetService, BudgetService>();
 
 var app = builder.Build();
 
@@ -52,5 +63,5 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-
+app.MapAdditionalIdentityEndpoints();
 app.Run();

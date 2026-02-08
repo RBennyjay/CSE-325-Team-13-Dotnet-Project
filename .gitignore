@@ -1,25 +1,23 @@
 ## --- .NET / Visual Studio ---
 [Dd]ebug/
 [Rr]elease/
-[Bb]in/
-[Oo]bj/
+**/[Bb]in/
+**/[Oo]bj/
+**/*[Bb]in*/**
+**/*[Oo]bj*/**
 .vs/
 .vscode/
 *.user
 *.suo
 *.sln.docstates
 
-## --- SQLite (CRITICAL) ---
+## --- SQLite ---
 *.db
 *.db-shm
 *.db-wal
 
-## --- Application Settings ---
-# Only ignore Development settings if you want to keep secrets local
-# Keep appsettings.json so the app has a base config
+## --- Settings & Secrets ---
 appsettings.Development.json
-
-## --- Environment & Secrets ---
 .env
 .env.*
 secrets.json
@@ -33,6 +31,3 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 *.nupkg
-
-## --- Node (Only if using Tailwind/JS) ---
-node_modules/
