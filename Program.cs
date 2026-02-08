@@ -23,34 +23,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 // Configure SQL Server connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-{
-    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-    {
-        // Use SQLite for Mac
-        options.UseSqlite(connectionString);
-    }
-    else
-    {
-        // Use SQL Server for the team on Windows
-        options.UseSqlServer(connectionString);
-    }
-    
-    options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
-});
-
-
-// account identity
-builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddScoped<IdentityUserAccessor>();
-builder.Services.AddScoped<IdentityRedirectManager>();
-builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
-
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultScheme = IdentityConstants.ApplicationScheme;
-        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-    })
-    .AddIdentityCookies();
+    options.UseSqlServer(connectionString));
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>()
