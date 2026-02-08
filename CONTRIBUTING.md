@@ -200,7 +200,7 @@ Before submitting a PR, ensure:
 
 ## Questions or Issues?
 
-- Ask in the team Slack/Discord
+- Ask in the team Team
 - Create an issue on GitHub for bugs
 - Comment on relevant Trello cards
 - Reference the [DEVELOPMENT.md](./DEVELOPMENT.md) guide

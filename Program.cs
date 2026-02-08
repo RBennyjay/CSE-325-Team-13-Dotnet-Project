@@ -18,8 +18,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 // Configure SQL Server connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString)
-           .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
+    options.UseSqlServer(connectionString));
 
 // Add Identity
 builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
