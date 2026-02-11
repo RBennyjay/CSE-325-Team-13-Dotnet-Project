@@ -1,23 +1,45 @@
 @page "/spending-summary"
+@rendermode InteractiveServer
 @using SmartBudget.DTOs
 @using SmartBudget.Interfaces
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize]
 @inject IExpenseService ExpenseService
 @inject ICategoryService CategoryService
 @inject IBudgetService BudgetService
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Spending Summary</PageTitle>
 
-<div class="container py-4">
-    <h2 class="mb-3">Spending Summary</h2>
+<div class="container-fluid py-4 px-lg-4">
+    <!-- Page Header -->
+    <div class="sb-page-header d-flex justify-content-between align-items-center" style="background:linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);">
+        <div>
+            <h2>📊 Spending Summary</h2>
+            <p>@MonthName(selectedMonth) @selectedYear — Budget vs. Actual</p>
+        </div>
+        <div class="d-flex gap-3">
+            <div class="sb-stat-card" style="background:rgba(255,255,255,0.15);border:none;color:#fff;min-width:120px;">
+                <div class="sb-stat-value" style="color:#fff;">@totalSpent.ToString("C")</div>
+                <div class="sb-stat-label" style="color:rgba(255,255,255,0.8);">Total Spent</div>
+            </div>
+            <div class="sb-stat-card" style="background:rgba(255,255,255,0.15);border:none;color:#fff;min-width:120px;">
+                <div class="sb-stat-value" style="color:#fff;">@totalBudget.ToString("C")</div>
+                <div class="sb-stat-label" style="color:rgba(255,255,255,0.8);">Total Budget</div>
+            </div>
+        </div>
+    </div>
 
     @if (!string.IsNullOrWhiteSpace(error))
     {
         <div class="alert alert-danger">@error</div>
     }
 
-    <div class="card mb-3">
+    <!-- Filters -->
+    <div class="card mb-4">
         <div class="card-body">
-            <div class="row g-2 align-items-end">
+            <div class="row g-3 align-items-end">
                 <div class="col-md-3">
                     <label class="form-label">Month</label>
                     <select class="form-select" @bind="selectedMonth" disabled="@isBusy">
@@ -36,80 +58,113 @@
 
                 <div class="col-md-3 d-grid">
                     <button class="btn btn-primary" @onclick="LoadSummary" disabled="@isBusy">
-                        @(isBusy ? "Loading..." : "Refresh")
+                        @(isBusy ? "Loading..." : "🔄 Refresh")
                     </button>
-                </div>
-
-                <div class="col-md-3 text-md-end">
-                    <div class="fw-semibold">Total Spent</div>
-                    <div class="fs-5">@totalSpent.ToString("C")</div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Summary Table -->
     <div class="card">
-        <div class="card-body">
-            <h5 class="card-title mb-3">@MonthName(selectedMonth) @selectedYear</h5>
+        <div class="card-body p-0">
+            <div class="d-flex justify-content-between align-items-center px-4 py-3" style="border-bottom:1px solid var(--sb-gray-200);">
+                <h5 class="mb-0 fw-bold">@MonthName(selectedMonth) @selectedYear</h5>
+                <span class="badge" style="background:var(--sb-warning-bg);color:var(--sb-warning);font-size:0.85rem;">
+                    @rows.Count categories
+                </span>
+            </div>
 
             @if (isBusy && rows.Count == 0)
             {
-                <p class="text-muted mb-0">Loading...</p>
+                <div class="sb-empty-state">
+                    <div class="sb-empty-icon">⏳</div>
+                    <p>Loading summary...</p>
+                </div>
             }
             else if (rows.Count == 0)
             {
-                <p class="text-muted mb-0">No spending found for this month.</p>
+                <div class="sb-empty-state">
+                    <div class="sb-empty-icon">📊</div>
+                    <p>No spending data for this month.</p>
+                </div>
             }
             else
             {
                 <div class="table-responsive">
-                    <table class="table table-sm align-middle">
+                    <table class="table table-hover align-middle mb-0">
                         <thead>
                             <tr>
-                                <th>Category</th>
+                                <th class="ps-4">Category</th>
                                 <th class="text-end">Spent</th>
                                 <th class="text-end">Budget</th>
                                 <th class="text-end">Remaining</th>
-                                <th class="text-end">% Used</th>
-                                <th class="text-end">Status</th>
+                                <th style="min-width:150px;">Progress</th>
+                                <th class="text-end pe-4">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var r in rows.OrderByDescending(x => x.Spent))
                             {
+                                var pct = Math.Min(r.PercentUsed, 100);
+                                var barColor = r.PercentUsed > 100 ? "var(--sb-danger)" : r.PercentUsed > 75 ? "var(--sb-warning)" : "var(--sb-success)";
                                 <tr>
-                                    <td>@r.CategoryName</td>
+                                    <td class="ps-4 fw-semibold">@r.CategoryName</td>
                                     <td class="text-end">@r.Spent.ToString("C")</td>
-                                    <td class="text-end">@((r.BudgetLimit is null) ? "-" : r.BudgetLimit.Value.ToString("C"))</td>
-                                    <td class="text-end">@((r.BudgetLimit is null) ? "-" : r.Remaining!.Value.ToString("C"))</td>
-                                    <td class="text-end">@((r.BudgetLimit is null) ? "-" : $"{r.PercentUsed:0}%")</td>
-                                    <td class="text-end">
-                                        @if (r.BudgetLimit is null)
+                                    <td class="text-end">@((r.BudgetLimit is null) ? "—" : r.BudgetLimit.Value.ToString("C"))</td>
+                                    <td class="text-end" style="color:@(r.Remaining < 0 ? "var(--sb-danger)" : "var(--sb-success)");">
+                                        @((r.BudgetLimit is null) ? "—" : r.Remaining!.Value.ToString("C"))
+                                    </td>
+                                    <td>
+                                        @if (r.BudgetLimit is not null)
                                         {
-                                            <span class="badge text-bg-secondary">No Budget</span>
-                                        }
-                                        else if (r.Remaining < 0)
-                                        {
-                                            <span class="badge text-bg-danger">Over</span>
+                                            <div class="sb-progress">
+                                                <div class="sb-progress-bar" style="width:@(pct)%;background:@barColor;"></div>
+                                            </div>
+                                            <div class="text-muted small mt-1">@($"{r.PercentUsed:0}%")</div>
                                         }
                                         else
                                         {
-                                            <span class="badge text-bg-success">OK</span>
+                                            <span class="text-muted small">No budget</span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        @if (r.BudgetLimit is null)
+                                        {
+                                            <span class="badge" style="background:var(--sb-gray-100);color:var(--sb-gray-500);">No Budget</span>
+                                        }
+                                        else if (r.Remaining < 0)
+                                        {
+                                            <span class="badge" style="background:var(--sb-danger-bg);color:var(--sb-danger);">Over</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge" style="background:var(--sb-success-bg);color:var(--sb-success);">OK</span>
                                         }
                                     </td>
                                 </tr>
                             }
                         </tbody>
                         <tfoot>
-                            <tr class="fw-semibold">
-                                <td>Total</td>
+                            <tr>
+                                <td class="ps-4">Total</td>
                                 <td class="text-end">@totalSpent.ToString("C")</td>
                                 <td class="text-end">@totalBudget.ToString("C")</td>
-                                <td class="text-end">@((totalBudget - totalSpent).ToString("C"))</td>
-                                <td class="text-end">
-                                    @((totalBudget > 0) ? $"{(totalSpent / totalBudget) * 100m:0}%" : "-")
+                                <td class="text-end" style="color:@(totalBudget - totalSpent < 0 ? "var(--sb-danger)" : "var(--sb-success)");">
+                                    @((totalBudget - totalSpent).ToString("C"))
                                 </td>
-                                <td class="text-end"></td>
+                                <td>
+                                    @if (totalBudget > 0)
+                                    {
+                                        var totalPct = Math.Min((totalSpent / totalBudget) * 100m, 100);
+                                        var totalBarColor = totalPct > 100 ? "var(--sb-danger)" : totalPct > 75 ? "var(--sb-warning)" : "var(--sb-success)";
+                                        <div class="sb-progress">
+                                            <div class="sb-progress-bar" style="width:@(totalPct)%;background:@totalBarColor;"></div>
+                                        </div>
+                                        <div class="text-muted small mt-1">@($"{(totalSpent / totalBudget) * 100m:0}%")</div>
+                                    }
+                                </td>
+                                <td></td>
                             </tr>
                         </tfoot>
                     </table>
@@ -120,8 +175,7 @@
 </div>
 
 @code {
-    // TEMP until login UI is merged:
-    private const string userId = "dev-user-123";
+    private string? userId;
 
     private bool isBusy;
     private string error = "";
@@ -136,6 +190,10 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
         var now = DateTime.Now;
         selectedMonth = now.Month;
         selectedYear = now.Year;
@@ -153,6 +211,12 @@
 
             totalSpent = 0;
             totalBudget = 0;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                error = "User not authenticated.";
+                return;
+            }
 
             // Categories
             var categories = await CategoryService.GetCategoriesByUserAsync(userId);

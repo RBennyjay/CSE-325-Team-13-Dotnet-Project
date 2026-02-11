@@ -25,25 +25,31 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddSignInManager()
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
+
 // Add services to the container.
+builder.Services.AddControllers();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // Add repository services
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
+
+// Register IdentityRedirectManager for DI
+builder.Services.AddScoped<SmartBudget.Components.Account.IdentityRedirectManager>();
+
 // REGISTER YOUR EXPENSE SERVICE HERE:
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
-
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IBudgetService, BudgetService>();
+builder.Services.AddScoped<IIncomeService, IncomeService>();
+
 
 var app = builder.Build();
 
@@ -60,8 +66,10 @@ app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
+
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+app.MapControllers();
 app.MapAdditionalIdentityEndpoints();
 app.Run();

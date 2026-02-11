@@ -1,13 +1,27 @@
 @page "/categories"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@attribute [Authorize]
 @using SmartBudget.DTOs
-@using SmartBudget.Services
-
+@using SmartBudget.Interfaces
+@using Microsoft.AspNetCore.Components.Authorization
 @inject ICategoryService CategoryService
 
 <PageTitle>Categories</PageTitle>
 
-<div class="container py-4">
-    <h2 class="mb-3">Categories</h2>
+<div class="container-fluid py-4 px-lg-4">
+    <!-- Page Header -->
+    <div class="sb-page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2>🏷️ Categories</h2>
+            <p>Organize your spending with custom categories</p>
+        </div>
+        <div class="sb-stat-card" style="background:rgba(255,255,255,0.15);border:none;color:#fff;min-width:100px;">
+            <div class="sb-stat-value" style="color:#fff;">@categories.Count</div>
+            <div class="sb-stat-label" style="color:rgba(255,255,255,0.8);">Total</div>
+        </div>
+    </div>
 
     @if (!string.IsNullOrWhiteSpace(error))
     {
@@ -18,88 +32,129 @@
         <div class="alert alert-success">@message</div>
     }
 
-    <div class="card mb-3">
+    <!-- Add Category Card -->
+    <div class="card mb-4">
         <div class="card-body">
-            <h5 class="card-title mb-3">Add Category</h5>
-
-            <div class="row g-2">
-                <div class="col-md-4">
-                    <input class="form-control" placeholder="Name"
-                           @bind="newCategory.Name" />
+            <h5 class="fw-bold mb-3">Add New Category</h5>
+            <EditForm Model="newCategory" OnValidSubmit="AddCategory" FormName="AddCategoryForm">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Name</label>
+                        <InputText class="form-control" placeholder="e.g. Groceries"
+                               @bind-Value="newCategory.Name" />
+                        <ValidationMessage For="@(() => newCategory.Name)" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Description</label>
+                        <InputText class="form-control" placeholder="Optional description"
+                               @bind-Value="newCategory.Description" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Color</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="color" class="form-control form-control-color"
+                                   value="@newHexColor"
+                                   @onchange="OnNewColorChanged"
+                                   title="Pick a color" style="min-width:48px;height:42px;padding:4px;" />
+                            <div class="flex-grow-1">
+                                <label class="form-label mb-0" style="font-size:0.7rem;">Opacity: @($"{newOpacity}%")</label>
+                                <input type="range" class="form-range" min="0" max="100" step="5"
+                                       value="@newOpacity"
+                                       @onchange="OnNewOpacityChanged" />
+                            </div>
+                            <span class="sb-color-dot" style="background-color:@GetNewRgbaPreview();width:28px;height:28px;flex-shrink:0;"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-1 d-grid">
+                        <button class="btn btn-primary" type="submit" disabled="@isBusy">
+                            + Add
+                        </button>
+                    </div>
                 </div>
-                <div class="col-md-5">
-                    <input class="form-control" placeholder="Description (optional)"
-                           @bind="newCategory.Description" />
-                </div>
-                <div class="col-md-2">
-                    <input class="form-control" placeholder="Color (e.g. #22c55e)"
-                           @bind="newCategory.Color" />
-                </div>
-                <div class="col-md-1 d-grid">
-                    <button class="btn btn-primary" @onclick="AddCategory" disabled="@isBusy">
-                        Add
-                    </button>
-                </div>
-            </div>
+            </EditForm>
         </div>
     </div>
 
+    <!-- Categories List -->
     <div class="card">
         <div class="card-body">
-            <h5 class="card-title mb-3">Your Categories</h5>
+            <h5 class="fw-bold mb-3">Your Categories</h5>
 
             @if (isBusy && categories.Count == 0)
             {
-                <p class="text-muted mb-0">Loading...</p>
+                <div class="sb-empty-state">
+                    <div class="sb-empty-icon">⏳</div>
+                    <p>Loading categories...</p>
+                </div>
             }
             else if (categories.Count == 0)
             {
-                <p class="text-muted mb-0">No categories yet.</p>
+                <div class="sb-empty-state">
+                    <div class="sb-empty-icon">🏷️</div>
+                    <p>No categories yet. Create your first one above!</p>
+                </div>
             }
             else
             {
-                <ul class="list-group">
+                <ul class="list-group list-group-flush">
                     @foreach (var c in categories)
                     {
                         <li class="list-group-item d-flex justify-content-between align-items-start">
                             @if (editingId == c.Id)
                             {
                                 <div class="w-100">
-                                    <div class="row g-2">
+                                    <div class="row g-2 align-items-end">
                                         <div class="col-md-4">
+                                            <label class="form-label">Name</label>
                                             <input class="form-control" @bind="editCategory.Name" />
                                         </div>
-                                        <div class="col-md-5">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Description</label>
                                             <input class="form-control" @bind="editCategory.Description" />
                                         </div>
-                                        <div class="col-md-2">
-                                            <input class="form-control" @bind="editCategory.Color" />
+                                        <div class="col-md-3">
+                                            <label class="form-label">Color</label>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <input type="color" class="form-control form-control-color"
+                                                       value="@editHexColor"
+                                                       @onchange="OnEditColorChanged"
+                                                       title="Pick a color" style="min-width:42px;height:38px;padding:3px;" />
+                                                <div class="flex-grow-1">
+                                                    <label class="form-label mb-0" style="font-size:0.7rem;">Opacity: @($"{editOpacity}%")</label>
+                                                    <input type="range" class="form-range" min="0" max="100" step="5"
+                                                           value="@editOpacity"
+                                                           @onchange="OnEditOpacityChanged" />
+                                                </div>
+                                                <span class="sb-color-dot" style="background-color:@GetEditRgbaPreview();width:24px;height:24px;flex-shrink:0;"></span>
+                                            </div>
                                         </div>
-                                        <div class="col-md-1 d-grid">
-                                            <button class="btn btn-success btn-sm" @onclick="SaveEdit" disabled="@isBusy">
-                                                Save
-                                            </button>
+                                        <div class="col-md-1 d-flex gap-2">
+                                            <button class="btn btn-success btn-sm flex-fill" @onclick="SaveEdit" disabled="@isBusy">Save</button>
+                                            <button class="btn btn-outline-secondary btn-sm" @onclick="CancelEdit" disabled="@isBusy">✕</button>
                                         </div>
-                                    </div>
-
-                                    <div class="mt-2 d-flex gap-2">
-                                        <button class="btn btn-outline-secondary btn-sm" @onclick="CancelEdit" disabled="@isBusy">Cancel</button>
-                                        <button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteCategory(c)" disabled="@isBusy">Delete</button>
                                     </div>
                                 </div>
                             }
                             else
                             {
-                                <div>
-                                    <div class="fw-semibold">@c.Name</div>
-                                    @if (!string.IsNullOrWhiteSpace(c.Description))
-                                    {
-                                        <div class="text-muted small">@c.Description</div>
-                                    }
+                                <div class="d-flex align-items-center gap-3">
                                     @if (!string.IsNullOrWhiteSpace(c.Color))
                                     {
-                                        <div class="small">Color: <span class="text-muted">@c.Color</span></div>
+                                        <span class="sb-color-dot" style="background-color:@c.Color;"></span>
                                     }
+                                    else
+                                    {
+                                        <span class="sb-color-dot" style="background-color:var(--sb-primary);"></span>
+                                    }
+                                    <div>
+                                        <div class="fw-semibold">@c.Name</div>
+                                        @if (!string.IsNullOrWhiteSpace(c.Description))
+                                        {
+                                            <div class="text-muted small">@c.Description</div>
+                                        }
+                                    </div>
                                 </div>
 
                                 <div class="d-flex gap-2">
@@ -116,9 +171,8 @@
 </div>
 
 @code {
-    // TEMP: until auth is wired, use a placeholder userId.
-    // Later, replace with the real logged-in user id.
-    private const string userId = "dev-user-123";
+
+    private string? userId;
 
     private List<CategoryDto> categories = new();
     private bool isBusy;
@@ -127,11 +181,23 @@
 
     private CreateCategoryDto newCategory = new();
 
+    // Color picker state for Add form
+    private string newHexColor = "#6366f1";
+    private int newOpacity = 100;
+
     private int? editingId = null;
     private CreateCategoryDto editCategory = new();
 
+    // Color picker state for Edit form
+    private string editHexColor = "#6366f1";
+    private int editOpacity = 100;
+
+
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         await LoadCategories();
     }
 
@@ -142,6 +208,11 @@
             isBusy = true;
             error = "";
             message = "";
+            if (string.IsNullOrEmpty(userId))
+            {
+                error = "User not authenticated.";
+                return;
+            }
             categories = await CategoryService.GetCategoriesByUserAsync(userId);
         }
         catch (Exception ex)
@@ -156,21 +227,25 @@
 
     private async Task AddCategory()
     {
-        if (string.IsNullOrWhiteSpace(newCategory.Name))
-        {
-            error = "Category name is required.";
-            return;
-        }
-
         try
         {
             isBusy = true;
             error = "";
             message = "";
 
+            if (string.IsNullOrEmpty(userId))
+            {
+                error = "User not authenticated.";
+                return;
+            }
+
+            // Build RGBA from picker state
+            newCategory.Color = BuildRgba(newHexColor, newOpacity);
             await CategoryService.CreateCategoryAsync(userId, newCategory);
 
             newCategory = new CreateCategoryDto();
+            newHexColor = "#6366f1";
+            newOpacity = 100;
             message = "Category added.";
             await LoadCategories();
         }
@@ -193,6 +268,7 @@
             Description = c.Description,
             Color = c.Color
         };
+        ParseRgba(c.Color, out editHexColor, out editOpacity);
         error = "";
         message = "";
     }
@@ -201,6 +277,8 @@
     {
         editingId = null;
         editCategory = new CreateCategoryDto();
+        editHexColor = "#6366f1";
+        editOpacity = 100;
         error = "";
         message = "";
     }
@@ -221,6 +299,13 @@
             error = "";
             message = "";
 
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                error = "User not authenticated.";
+                return;
+            }
+            editCategory.Color = BuildRgba(editHexColor, editOpacity);
             await CategoryService.UpdateCategoryAsync(editingId.Value, userId, editCategory);
 
             message = "Category updated.";
@@ -245,6 +330,12 @@
             error = "";
             message = "";
 
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                error = "User not authenticated.";
+                return;
+            }
             await CategoryService.DeleteCategoryAsync(c.Id, userId);
 
             message = "Category deleted.";
@@ -257,6 +348,73 @@
         finally
         {
             isBusy = false;
+        }
+    }
+
+    // ── RGBA color helpers ──
+
+    private void OnNewColorChanged(ChangeEventArgs e) => newHexColor = e.Value?.ToString() ?? "#6366f1";
+    private void OnNewOpacityChanged(ChangeEventArgs e) { if (int.TryParse(e.Value?.ToString(), out var v)) newOpacity = v; }
+    private void OnEditColorChanged(ChangeEventArgs e) => editHexColor = e.Value?.ToString() ?? "#6366f1";
+    private void OnEditOpacityChanged(ChangeEventArgs e) { if (int.TryParse(e.Value?.ToString(), out var v)) editOpacity = v; }
+
+    private string GetNewRgbaPreview() => BuildRgba(newHexColor, newOpacity);
+    private string GetEditRgbaPreview() => BuildRgba(editHexColor, editOpacity);
+
+    private static string BuildRgba(string hex, int opacityPercent)
+    {
+        hex = (hex ?? "#6366f1").TrimStart('#');
+        if (hex.Length < 6) hex = "6366f1";
+        int r = Convert.ToInt32(hex.Substring(0, 2), 16);
+        int g = Convert.ToInt32(hex.Substring(2, 2), 16);
+        int b = Convert.ToInt32(hex.Substring(4, 2), 16);
+        double a = Math.Round(opacityPercent / 100.0, 2);
+        return $"rgba({r},{g},{b},{a})";
+    }
+
+    private static void ParseRgba(string? color, out string hex, out int opacity)
+    {
+        hex = "#6366f1";
+        opacity = 100;
+        if (string.IsNullOrWhiteSpace(color)) return;
+
+        // Try parsing rgba(r,g,b,a)
+        if (color.StartsWith("rgba(", StringComparison.OrdinalIgnoreCase))
+        {
+            var inner = color.Replace("rgba(", "").Replace(")", "");
+            var parts = inner.Split(',');
+            if (parts.Length >= 4
+                && int.TryParse(parts[0].Trim(), out var r)
+                && int.TryParse(parts[1].Trim(), out var g)
+                && int.TryParse(parts[2].Trim(), out var b)
+                && double.TryParse(parts[3].Trim(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var a))
+            {
+                hex = $"#{r:X2}{g:X2}{b:X2}";
+                opacity = (int)Math.Round(a * 100);
+                return;
+            }
+        }
+
+        // Try parsing rgb(r,g,b)
+        if (color.StartsWith("rgb(", StringComparison.OrdinalIgnoreCase))
+        {
+            var inner = color.Replace("rgb(", "").Replace(")", "");
+            var parts = inner.Split(',');
+            if (parts.Length >= 3
+                && int.TryParse(parts[0].Trim(), out var r)
+                && int.TryParse(parts[1].Trim(), out var g)
+                && int.TryParse(parts[2].Trim(), out var b))
+            {
+                hex = $"#{r:X2}{g:X2}{b:X2}";
+                opacity = 100;
+                return;
+            }
+        }
+
+        // Try parsing hex
+        if (color.StartsWith("#") && color.Length >= 7)
+        {
+            hex = color.Substring(0, 7);
         }
     }
 }

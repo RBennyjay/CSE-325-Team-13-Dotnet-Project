@@ -1,6 +1,9 @@
 ﻿<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">SmartBudget</a>
+        <a class="navbar-brand d-flex align-items-center gap-2" href="">
+            <span style="font-size:1.5rem;">💰</span>
+            <span style="font-weight:800;font-size:1.15rem;letter-spacing:-0.02em;">SmartBudget</span>
+        </a>
     </div>
 </div>
 
@@ -10,55 +13,61 @@
     <nav class="nav flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                <span class="nav-icon" aria-hidden="true">🏠</span> Home
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="/expenses">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Expenses
+                <span class="nav-icon" aria-hidden="true">💸</span> Expenses
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="categories">
-                <span class="bi bi-tags-fill-nav-menu" aria-hidden="true"></span> Categories
+                <span class="nav-icon" aria-hidden="true">🏷️</span> Categories
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="budgets">
-                <span class="bi bi-wallet2-nav-menu" aria-hidden="true"></span> Budgets
+                <span class="nav-icon" aria-hidden="true">📋</span> Budgets
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="spending-summary">
-                <span class="bi bi-bar-chart-nav-menu" aria-hidden="true"></span> Spending Summary
+                <span class="nav-icon" aria-hidden="true">📊</span> Spending Summary
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="income">
+                <span class="nav-icon" aria-hidden="true">💵</span> Income
             </NavLink>
         </div>
 
         <AuthorizeView>
             <Authorized>
-                <div class="nav-item px-3">
+                <div class="nav-item px-3 mt-auto" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.5rem;">
                     <form action="Account/Logout" method="post">
                         <AntiforgeryToken />
                         <input type="hidden" name="ReturnUrl" value="" />
-                        <button type="submit" class="nav-link" >
-                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+                        <button type="submit" class="nav-link">
+                            <span class="nav-icon" aria-hidden="true">🚪</span> Logout
                         </button>
                     </form>
                 </div>
             </Authorized>
             <NotAuthorized>
-                <div class="nav-item px-3">
+                <div class="nav-item px-3" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.5rem; margin-top: 0.5rem;">
                     <NavLink class="nav-link" href="Account/Register">
-                        <span class="bi bi-person-plus-nav-menu" aria-hidden="true"></span> Register
+                        <span class="nav-icon" aria-hidden="true">📝</span> Register
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Login">
-                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
+                        <span class="nav-icon" aria-hidden="true">🔑</span> Login
                     </NavLink>
                 </div>
             </NotAuthorized>

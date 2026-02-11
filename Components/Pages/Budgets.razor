@@ -1,4 +1,7 @@
 @page "/budgets"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 @using SmartBudget.DTOs
 @using SmartBudget.Interfaces
 @using SmartBudget.Services
@@ -6,11 +9,23 @@
 @inject IBudgetService BudgetService
 @inject ICategoryService CategoryService
 @inject IJSRuntime JS
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Budgets</PageTitle>
 
-<div class="container py-4">
-    <h2 class="mb-3">Budgets</h2>
+<div class="container-fluid py-4 px-lg-4">
+    <!-- Page Header -->
+    <div class="sb-page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2>📋 Budgets</h2>
+            <p>Set spending limits for each category</p>
+        </div>
+        <div class="sb-stat-card" style="background:rgba(255,255,255,0.15);border:none;color:#fff;min-width:100px;">
+            <div class="sb-stat-value" style="color:#fff;">@budgets.Count</div>
+            <div class="sb-stat-label" style="color:rgba(255,255,255,0.8);">Active</div>
+        </div>
+    </div>
 
     @if (!string.IsNullOrWhiteSpace(error))
     {
@@ -21,12 +36,12 @@
         <div class="alert alert-success">@message</div>
     }
 
-    <div class="card mb-3">
+    <!-- Add/Edit Budget Card -->
+    <div class="card mb-4">
         <div class="card-body">
-            <h5 class="card-title mb-3">@((editingId is null) ? "Add Budget" : "Edit Budget")</h5>
-
-            <div class="row g-2 align-items-end">
-                <div class="col-md-4">
+            <h5 class="fw-bold mb-3">@((editingId is null) ? "Add New Budget" : "Edit Budget")</h5>
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
                     <label class="form-label">Category</label>
                     <select class="form-select" @bind="form.CategoryId" disabled="@isBusy">
                         <option value="0">Select a category...</option>
@@ -51,81 +66,92 @@
 
                 <div class="col-md-2">
                     <label class="form-label">Limit</label>
-                    <input class="form-control" type="number" step="0.01" min="0"
-                           @bind="form.LimitAmount" disabled="@isBusy" />
+                    <div class="input-group">
+                        <span class="input-group-text" style="background:var(--sb-primary-bg);border-color:var(--sb-gray-200);font-weight:700;color:var(--sb-primary);">$</span>
+                        <input class="form-control" type="number" step="0.01" min="0"
+                               @bind="form.LimitAmount" disabled="@isBusy" />
+                    </div>
                 </div>
 
-                <div class="col-md-2 d-grid">
+                <div class="col-md-3 d-flex gap-2">
                     @if (editingId is null)
                     {
-                        <button class="btn btn-primary" @onclick="SaveNew" disabled="@isBusy">
-                            Save
-                        </button>
+                        <button class="btn btn-primary flex-fill" @onclick="SaveNew" disabled="@isBusy">+ Add Budget</button>
                     }
                     else
                     {
-                        <button class="btn btn-success" @onclick="SaveEdit" disabled="@isBusy">
-                            Update
-                        </button>
+                        <button class="btn btn-success flex-fill" @onclick="SaveEdit" disabled="@isBusy">Update</button>
+                        <button class="btn btn-outline-secondary" @onclick="CancelEdit" disabled="@isBusy">✕</button>
                     }
                 </div>
             </div>
-
-            @if (editingId is not null)
-            {
-                <div class="mt-2">
-                    <button class="btn btn-outline-secondary btn-sm" @onclick="CancelEdit" disabled="@isBusy">
-                        Cancel Edit
-                    </button>
-                </div>
-            }
         </div>
     </div>
 
+    <!-- Budgets Table -->
     <div class="card">
-        <div class="card-body">
-            <h5 class="card-title mb-3">Your Budgets</h5>
+        <div class="card-body p-0">
+            <div class="d-flex justify-content-between align-items-center px-4 py-3" style="border-bottom:1px solid var(--sb-gray-200);">
+                <h5 class="mb-0 fw-bold">Your Budgets</h5>
+            </div>
 
             @if (isBusy && budgets.Count == 0)
             {
-                <p class="text-muted mb-0">Loading...</p>
+                <div class="sb-empty-state">
+                    <div class="sb-empty-icon">⏳</div>
+                    <p>Loading budgets...</p>
+                </div>
             }
             else if (budgets.Count == 0)
             {
-                <p class="text-muted mb-0">No budgets yet.</p>
+                <div class="sb-empty-state">
+                    <div class="sb-empty-icon">📋</div>
+                    <p>No budgets yet. Set your first spending limit above!</p>
+                </div>
             }
             else
             {
                 <div class="table-responsive">
-                    <table class="table table-sm align-middle">
+                    <table class="table table-hover align-middle mb-0">
                         <thead>
                             <tr>
-                                <th>Category</th>
+                                <th class="ps-4">Category</th>
                                 <th>Month</th>
                                 <th>Year</th>
-                                <th>Limit</th>
-                                <th>Remaining</th>
-                                <th></th>
+                                <th class="text-end">Limit</th>
+                                <th class="text-end">Remaining</th>
+                                <th class="text-end">Status</th>
+                                <th class="text-end pe-4">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var b in budgets)
                             {
+                                var remaining = remainingByBudgetId.TryGetValue(b.Id, out var r) ? r : 0;
+                                var isOver = remaining < 0;
                                 <tr>
-                                    <td>@GetCategoryName(b.CategoryId)</td>
-                                    <td>@b.Month</td>
+                                    <td class="ps-4 fw-semibold">@GetCategoryName(b.CategoryId)</td>
+                                    <td>@(new DateTime(2000, b.Month, 1).ToString("MMM"))</td>
                                     <td>@b.Year</td>
-                                    <td>@b.LimitAmount.ToString("C")</td>
-                                    <td>@(remainingByBudgetId.TryGetValue(b.Id, out var r) ? r.ToString("C") : "...")</td>
+                                    <td class="text-end">@b.LimitAmount.ToString("C")</td>
+                                    <td class="text-end fw-bold" style="color:@(isOver ? "var(--sb-danger)" : "var(--sb-success)")">
+                                        @remaining.ToString("C")
+                                    </td>
                                     <td class="text-end">
-                                        <button class="btn btn-outline-primary btn-sm me-2"
-                                                @onclick="() => StartEdit(b)" disabled="@isBusy">
-                                            Edit
-                                        </button>
+                                        @if (isOver)
+                                        {
+                                            <span class="badge" style="background:var(--sb-danger-bg);color:var(--sb-danger);">Over Budget</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge" style="background:var(--sb-success-bg);color:var(--sb-success);">On Track</span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <button class="btn btn-outline-primary btn-sm me-1"
+                                                @onclick="() => StartEdit(b)" disabled="@isBusy">Edit</button>
                                         <button class="btn btn-outline-danger btn-sm"
-                                                @onclick="() => Delete(b)" disabled="@isBusy">
-                                            Delete
-                                        </button>
+                                                @onclick="() => Delete(b)" disabled="@isBusy">Delete</button>
                                     </td>
                                 </tr>
                             }
@@ -138,8 +164,7 @@
 </div>
 
 @code {
-    // TEMP until login UI is merged:
-    private const string userId = "dev-user-123";
+    private string? userId;
 
     private bool isBusy;
     private string message = "";
@@ -156,10 +181,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         var now = DateTime.Now;
         form.Month = now.Month;
         form.Year = now.Year;
-
         await LoadAll();
     }
 
@@ -171,6 +198,11 @@
             error = "";
             message = "";
 
+            if (string.IsNullOrEmpty(userId))
+            {
+                error = "User not authenticated.";
+                return;
+            }
             categories = await CategoryService.GetCategoriesByUserAsync(userId);
 
             var budgetList = await BudgetService.GetUserBudgetsAsync(userId);
@@ -181,7 +213,7 @@
             {
                 try
                 {
-                    remainingByBudgetId[b.Id] = await BudgetService.GetRemainingBudgetAsync(b.Id, userId);
+                    remainingByBudgetId[b.Id] = await BudgetService.GetRemainingBudgetAsync(b.Id, userId!);
                 }
                 catch
                 {
@@ -239,6 +271,11 @@
         {
             isBusy = true;
 
+            if (string.IsNullOrEmpty(userId))
+            {
+                error = "User not authenticated.";
+                return;
+            }
             await BudgetService.CreateBudgetAsync(form, userId);
 
             message = "Budget created.";
@@ -300,6 +337,11 @@
         {
             isBusy = true;
 
+            if (string.IsNullOrEmpty(userId))
+            {
+                error = "User not authenticated.";
+                return;
+            }
             await BudgetService.UpdateBudgetAsync(editingId.Value, form, userId);
 
             message = "Budget updated.";
@@ -327,6 +369,11 @@
             error = "";
             message = "";
 
+            if (string.IsNullOrEmpty(userId))
+            {
+                error = "User not authenticated.";
+                return;
+            }
             await BudgetService.DeleteBudgetAsync(b.Id, userId);
 
             message = "Budget deleted.";
