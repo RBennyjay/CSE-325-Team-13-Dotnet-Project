@@ -151,29 +151,31 @@
         </div>
     </div>
 </div>
+@code {
+    private List<ExpenseDto> userExpenses = new();
+    private List<CategoryDto> categories = new();
+    private CreateExpenseDto newExpense = new() { Date = DateTime.Now };
+    private decimal monthlyTotal;
+    private string? userId;
 
-    @code {
-        private List<ExpenseDto> userExpenses = new();
-        private List<CategoryDto> categories = new();
-        private CreateExpenseDto newExpense = new() { Date = DateTime.Now };
-        private decimal monthlyTotal;
-        private string? userId;
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-        protected override async Task OnInitializedAsync()
+        // Safety check: only load if we actually have a user
+        if (!string.IsNullOrEmpty(userId))
         {
-            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
-            userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             await LoadData();
         }
-
+    }
 
     private async Task LoadData()
     {
-        if (string.IsNullOrEmpty(userId))
-        {
-            return;
-        }
+        if (string.IsNullOrEmpty(userId)) return;
+
+        // Sequence loading (The 'Previous Code' style)
         categories = await CategoryService.GetCategoriesByUserAsync(userId);
         userExpenses = await ExpenseService.GetExpensesByUserAsync(userId);
 
@@ -182,32 +184,25 @@
             DateTime.Now.Month,
             DateTime.Now.Year
         );
+
+        // Force UI to refresh after data arrives
+        StateHasChanged();
     }
-
-
 
     private async Task HandleAddExpense()
     {
-        Console.WriteLine("--- HandleAddExpense Triggered ---");
-
-        if (newExpense.CategoryId == 0)
-        {
-            Console.WriteLine("Abort: Category is 0");
-            return;
-        }
+        if (string.IsNullOrEmpty(userId) || newExpense.CategoryId == 0) return;
 
         try
         {
+            // Use the userId! (null-forgiving) because we checked it above
             var result = await ExpenseService.CreateExpenseAsync(userId!, newExpense);
-            @* var result = await ExpenseService.CreateExpenseAsync(null, newExpense); *@
 
-            Console.WriteLine($"Saved Expense ID: {result.Id}");
-
+            // SUCCESS: Reset the form
             newExpense = new CreateExpenseDto { Date = DateTime.Now };
-            await LoadData();
-            Console.WriteLine($"Data Reloaded. Total Count: {userExpenses.Count}");
 
-            StateHasChanged();
+            // Reload the list so the new expense appears at the top
+            await LoadData();
         }
         catch (Exception ex)
         {
@@ -215,14 +210,12 @@
         }
     }
 
-
-
     private async Task DeleteExpense(int id)
     {
+        if (string.IsNullOrEmpty(userId)) return;
+
         try
         {
-            if (string.IsNullOrEmpty(userId))
-                return;
             await ExpenseService.DeleteExpenseAsync(id, userId);
             await LoadData();
         }
