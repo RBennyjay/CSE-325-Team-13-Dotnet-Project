@@ -130,6 +130,7 @@
     private string? userId;
     private decimal totalIncome;
     private decimal remainingIncome;
+
     private string totalIncomeDisplay => totalIncome.ToString("C");
     private string remainingIncomeDisplay => remainingIncome.ToString("C");
 
@@ -137,22 +138,37 @@
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        // Correct way to get the User ID from claims
+        userId = user.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        if (!string.IsNullOrEmpty(userId))
+        {
+            await LoadData();
+        }
+    }
+
+    private async Task LoadData()
+    {
+        // Combined loading to ensure sequence
         await LoadIncome();
         await CalculateTotals();
     }
 
     private async Task LoadIncome()
     {
+        if (string.IsNullOrEmpty(userId)) return;
+
         isBusy = true;
         try
         {
             var result = await IncomeService.GetUserIncomeAsync(userId);
-            incomes = result.ToList();
+            incomes = result?.ToList() ?? new List<IncomeDto>();
         }
         catch (Exception ex)
         {
-            error = ex.Message;
+            error = "Could not load income entries.";
+            Console.WriteLine($"Error: {ex.Message}");
         }
         finally
         {
@@ -162,25 +178,32 @@
 
     private async Task AddIncome()
     {
+        if (string.IsNullOrEmpty(userId)) return;
+
         isBusy = true;
         error = null;
         message = null;
         try
         {
-            await IncomeService.CreateIncomeAsync(new IncomeDto {
+            // Map the DTO and pass the userId
+            var dtoToAdd = new IncomeDto
+            {
                 Amount = newIncome.Amount,
                 Source = newIncome.Source,
                 Description = newIncome.Description,
                 Date = newIncome.Date
-            }, userId);
+            };
+
+            await IncomeService.CreateIncomeAsync(dtoToAdd, userId);
+
             message = "Income added successfully.";
-            newIncome = new CreateIncomeDto();
-            await LoadIncome();
-            await CalculateTotals();
+            newIncome = new CreateIncomeDto { Date = DateTime.Now }; // Reset form
+            await LoadData();
         }
         catch (Exception ex)
         {
-            error = ex.Message;
+            error = "Failed to add income.";
+            Console.WriteLine($"Error: {ex.Message}");
         }
         finally
         {
@@ -190,9 +213,22 @@
 
     private async Task CalculateTotals()
     {
+        if (string.IsNullOrEmpty(userId)) return;
+
+        // Sum current income list
         totalIncome = incomes.Sum(i => i.Amount);
-        var expenses = await ExpenseService.GetExpensesByUserAsync(userId);
-        var totalExpenses = expenses.Sum(e => e.Amount);
-        remainingIncome = totalIncome - totalExpenses;
+
+        try
+        {
+            // Use the service to get user-specific expenses
+            var expenses = await ExpenseService.GetExpensesByUserAsync(userId);
+            var totalExpenses = expenses?.Sum(e => e.Amount) ?? 0;
+
+            remainingIncome = totalIncome - totalExpenses;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error calculating expenses: {ex.Message}");
+        }
     }
 }

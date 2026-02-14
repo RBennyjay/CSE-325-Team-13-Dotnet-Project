@@ -4,39 +4,35 @@
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<PageTitle>Smart Budget - Personal Finance Manager</PageTitle>
+<PageTitle>Smart Budget | Premium Finance Tracking</PageTitle>
 
-<!-- Hero Section -->
-<section class="hero-section bg-primary text-white py-5 mb-5">
+<section class="hero-section">
     <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">Smart Budget</h1>
-                <p class="lead mb-4">Take Control of Your Finances with Confidence</p>
-                <p class="mb-4">Track your income, manage expenses, and achieve your financial goals with our intuitive budgeting app.</p>
-                <div class="d-flex gap-3">
-                    @if (isAuthenticated)
-                    {
-                        <a href="/dashboard" class="btn btn-light btn-lg">Go to Dashboard</a>
-                        <a href="/logout" class="btn btn-outline-light btn-lg">Logout</a>
-                    }
-                    else
-                    {
-                        <a href="/register" class="btn btn-light btn-lg">Get Started</a>
-                        <a href="/login" class="btn btn-outline-light btn-lg">Sign In</a>
-                    }
-                </div>
+        <div class="row align-items-center min-vh-75 py-5">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <span class="badge rounded-pill bg-glass mb-3 text-primary px-3 py-2">v2.0 Now Live</span>
+                <h1 class="display-3 fw-bold mb-4 gradient-text">Smart Budgeting for the Modern World</h1>
+                <p class="lead text-secondary mb-5">Master your cash flow with precision. An intuitive platform designed to help you track, save, and grow your wealth effortlessly.</p>
+          
+                    <div class="d-flex gap-3">
+                        @if (isAuthenticated)
+                        {
+                            <a href="dashboard" class="btn btn-primary btn-lg px-4 shadow-sm">View Dashboard</a>
+                            <a href="Account/Logout" class="btn btn-outline-secondary btn-lg px-4">Sign Out</a>
+                        }
+                        else
+                        {
+                            <a href="Account/Register" class="btn btn-primary btn-lg px-4 shadow-sm">Get Started — Free</a>
+                            <a href="Account/Login" class="btn btn-outline-primary btn-lg px-4">Sign In</a>
+                        }
+                    </div>
             </div>
             <div class="col-lg-6">
-                <div class="text-center">
-                    <svg width="300" height="300" viewBox="0 0 300 300" class="img-fluid">
-                        <rect x="30" y="100" width="80" height="120" fill="#FFC107" rx="5"/>
-                        <rect x="120" y="80" width="80" height="140" fill="#28A745" rx="5"/>
-                        <rect x="210" y="110" width="80" height="110" fill="#DC3545" rx="5"/>
-                        <line x1="20" y1="250" x2="290" y2="250" stroke="#999" stroke-width="2"/>
-                        <circle cx="70" cy="90" r="8" fill="#FFC107"/>
-                        <circle cx="160" cy="50" r="8" fill="#28A745"/>
-                        <circle cx="250" cy="95" r="8" fill="#DC3545"/>
+                <div class="hero-visual text-center">
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="img-fluid floating">
+                        <path fill="#0D6EFD" d="M44.7,-76.4C58.1,-69.2,69.2,-58.1,76.4,-44.7C83.7,-31.3,87.1,-15.7,85.1,-0.1C83.1,15.4,75.7,30.8,66.4,44.4C57,58,45.7,69.8,32.1,76.5C18.5,83.2,2.6,84.9,-13.7,82.3C-29.9,79.8,-46.5,73,-59.1,62.1C-71.7,51.2,-80.4,36.2,-84.3,20.2C-88.3,4.2,-87.5,-12.8,-81.4,-27.6C-75.3,-42.4,-63.9,-55,-50.2,-62.1C-36.5,-69.2,-20.5,-70.8,-3.8,-64.3C12.9,-57.8,25.8,-42.8,44.7,-76.4Z" transform="translate(100 100)" />
+                        <rect x="60" y="60" width="80" height="80" rx="15" fill="rgba(255,255,255,0.9)" />
+                        <path d="M75 110 L95 90 L105 100 L125 80" stroke="#0D6EFD" stroke-width="4" fill="none" stroke-linecap="round"/>
                     </svg>
                 </div>
             </div>
@@ -44,180 +40,282 @@
     </div>
 </section>
 
-<!-- Features Section -->
-<section class="features-section py-5 mb-5">
-    <div class="container">
-        <h2 class="text-center mb-5">Key Features</h2>
-        <div class="row g-4">
-            <!-- Feature 1 -->
-            <div class="col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm h-100 feature-card">
-                    <div class="card-body text-center">
-                        <div class="feature-icon mb-3" style="font-size: 2.5rem;">💰</div>
-                        <h5 class="card-title">Income Tracking</h5>
-                        <p class="card-text text-muted">Log and monitor all your income sources in one place</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Feature 2 -->
-            <div class="col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm h-100 feature-card">
-                    <div class="card-body text-center">
-                        <div class="feature-icon mb-3" style="font-size: 2.5rem;">📊</div>
-                        <h5 class="card-title">Expense Management</h5>
-                        <p class="card-text text-muted">Track expenses and understand your spending habits</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Feature 3 -->
-            <div class="col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm h-100 feature-card">
-                    <div class="card-body text-center">
-                        <div class="feature-icon mb-3" style="font-size: 2.5rem;">🎯</div>
-                        <h5 class="card-title">Budget Planning</h5>
-                        <p class="card-text text-muted">Set spending limits and avoid overspending by category</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Feature 4 -->
-            <div class="col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm h-100 feature-card">
-                    <div class="card-body text-center">
-                        <div class="feature-icon mb-3" style="font-size: 2.5rem;">📈</div>
-                        <h5 class="card-title">Analytics & Reports</h5>
-                        <p class="card-text text-muted">Visualize trends and make informed financial decisions</p>
-                    </div>
-                </div>
-            </div>
+<div class="container">
+    <div class="row text-center stats-bar py-4 bg-white shadow-sm rounded-4 mb-5">
+        <div class="col-md-4 border-end">
+            <h3 class="fw-bold mb-0 text-primary">100%</h3>
+            <p class="text-muted small mb-0">Secure Data Encryption</p>
         </div>
+        <div class="col-md-4 border-end">
+            <h3 class="fw-bold mb-0 text-primary">Real-time</h3>
+            <p class="text-muted small mb-0">Expense Analytics</p>
+        </div>
+        <div class="col-md-4">
+            <h3 class="fw-bold mb-0 text-primary">Cloud</h3>
+            <p class="text-muted small mb-0">Multi-device Sync</p>
+        </div>
+    </div>
+</div>
+
+<section class="py-5 mb-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Financial Mastery Tools</h2>
+            <p class="text-muted">Everything you need to manage your money like a pro.</p>
+        </div>
+        
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <a href="@(isAuthenticated ? "income" : "Account/Login")" class="text-decoration-none">
+                        <div class="card h-100 premium-card">
+                            <div class="card-body p-4">
+                                <div class="icon-box bg-blue-light mb-3">💰</div>
+                                <h5 class="fw-bold text-dark">Smart Seeding</h5>
+                                <p class="text-muted small">Auto-categorize sources and manage recurring revenue with ease.
+                                </p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <a href="@(isAuthenticated ? "budgets" : "Account/Login")" class="text-decoration-none">
+                        <div class="card h-100 premium-card">
+                            <div class="card-body p-4">
+                                <div class="icon-box bg-green-light mb-3">📉</div>
+                                <h5 class="fw-bold text-dark">Budget Guard</h5>
+                                <p class="text-muted small">Set strict limits and receive alerts before you overspend.</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <a href="@(isAuthenticated ? "spending-summary" : "Account/Login")" class="text-decoration-none">
+                        <div class="card h-100 premium-card">
+                            <div class="card-body p-4">
+                                <div class="icon-box bg-purple-light mb-3">📊</div>
+                                <h5 class="fw-bold text-dark">Visual Reports</h5>
+                                <p class="text-muted small">Elegant charts and graphs to visualize your financial
+                                    trajectory.</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-md-6 col-lg-3">
+                        <a href="@(isAuthenticated ? "categories" : "Account/Login")" class="text-decoration-none">
+                            <div class="card h-100 premium-card">
+                                <div class="card-body p-4">
+                                    <div class="icon-box bg-gold-light mb-3">🎯</div>
+                                    <h5 class="fw-bold text-dark">Savings Goals</h5>
+                                    <p class="text-muted small">Define your future milestones and track your progress daily.</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+
+
+
+
     </div>
 </section>
 
-<!-- Benefits Section -->
-<section class="benefits-section py-5 mb-5 bg-light">
-    <div class="container">
-        <h2 class="text-center mb-5">Why Choose Smart Budget?</h2>
-        <div class="row">
-            <div class="col-md-6 mb-4">
-                <div class="d-flex gap-3">
-                    <div>
-                        <div class="badge bg-primary rounded-pill p-2" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">✓</div>
+    <footer class="footer-modern mt-5">
+        <div class="container pt-5 pb-4">
+            <div class="row gy-4 mb-4">
+                <div class="col-lg-4 col-md-12">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="logo-dot me-2"></div>
+                        <h5 class="fw-bold text-white mb-0">Smart Budget</h5>
                     </div>
-                    <div>
-                        <h5>Easy to Use</h5>
-                        <p class="text-muted">Intuitive interface that makes budgeting effortless</p>
-                    </div>
+                    <p class="text-light-gray small pe-lg-5">
+                        Premium finance management for teams and individuals.
+                        Built for the CSE-325 Dotnet Project showcase.
+                    </p>
                 </div>
-            </div>
-            <div class="col-md-6 mb-4">
-                <div class="d-flex gap-3">
-                    <div>
-                        <div class="badge bg-success rounded-pill p-2" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">✓</div>
-                    </div>
-                    <div>
-                        <h5>Secure</h5>
-                        <p class="text-muted">Your financial data is protected with industry-standard security</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 mb-4">
-                <div class="d-flex gap-3">
-                    <div>
-                        <div class="badge bg-info rounded-pill p-2" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">✓</div>
-                    </div>
-                    <div>
-                        <h5>Real-time Insights</h5>
-                        <p class="text-muted">Get instant feedback on your spending and budget status</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 mb-4">
-                <div class="d-flex gap-3">
-                    <div>
-                        <div class="badge bg-warning rounded-pill p-2" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">✓</div>
-                    </div>
-                    <div>
-                        <h5>Detailed Reports</h5>
-                        <p class="text-muted">Comprehensive analytics to understand your financial patterns</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
 
-<!-- CTA Section -->
-<section class="cta-section py-5 bg-primary text-white">
-    <div class="container text-center">
-        <h2 class="mb-4">Ready to Take Control of Your Money?</h2>
-        @if (!isAuthenticated)
-        {
-            <p class="lead mb-4">Join thousands of users already managing their finances smarter</p>
-            <a href="/register" class="btn btn-light btn-lg">Create Your Free Account</a>
-        }
-        else
-        {
-            <p class="lead mb-4">Start tracking your finances today!</p>
-            <a href="/dashboard" class="btn btn-light btn-lg">Go to Dashboard</a>
-        }
-    </div>
-</section>
+                <div class="col-lg-4 col-md-6">
+                    <h6 class="text-primary text-uppercase fw-bold mb-3 small tracking-widest">Team 13 Contributors</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <span class="contributor-link">
+                                <i class="bi bi-person-circle text-primary me-2"></i>
+                                <span class="text-white fw-medium">Ebenezer Edem John</span>
+                                @* <span class="text-light-gray small ms-1">— Lead Developer</span> *@
+                            </span>
+                        </li>
+                        <li class="mb-2 text-white fw-medium">
+                            <i class="bi bi-person-circle text-primary me-2"></i>Pablo Daniel Zabaleta
+                            @* <span class="text-light-gray small ms-1">— Backend</span> *@
+                        </li>
+                        <li class="mb-2 text-white fw-medium">
+                            <i class="bi bi-person-circle text-primary me-2"></i>Eno-obong Etim Bassey
+                            @* <span class="text-light-gray small ms-1">— UI/UX</span> *@
+                        </li>
+                        <li class="mb-2 text-white fw-medium">
+                            <i class="bi bi-person-circle text-primary me-2"></i>Maria Arevalo Narvaez
+                            @* <span class="text-light-gray small ms-1">— QA</span> *@
+                        </li>
+                        <li class="mb-2 text-white fw-medium">
+                            <i class="bi bi-person-circle text-primary me-2"></i>Benjamin Offor
+                            @* <span class="text-light-gray small ms-1">— QA</span> *@
+                        </li>
+                    </ul>
+                </div>
 
-<!-- Footer -->
-<footer class="bg-dark text-white py-4 mt-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <h6>Smart Budget</h6>
-                <p class="small text-muted">Your personal finance management companion</p>
+                <div class="col-lg-4 col-md-6">
+                    <h6 class="text-primary text-uppercase fw-bold mb-3 small tracking-widest">Project Information</h6>
+                    <div class="bg-glass-dark p-3 rounded-3">
+                        <p class="text-white small mb-1 fw-bold">University Project</p>
+                        <p class="text-light-gray small mb-0">CSE-325: Dotnet Project Development</p>
+                        <p class="text-light-gray small mb-0 mt-2">Submission Year: 2026</p>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-4 mb-3">
-                <h6>Features</h6>
-                <ul class="list-unstyled small">
-                    <li><a href="#" class="text-muted text-decoration-none">Income Tracking</a></li>
-                    <li><a href="#" class="text-muted text-decoration-none">Expense Management</a></li>
-                    <li><a href="#" class="text-muted text-decoration-none">Budget Planning</a></li>
-                </ul>
+
+            <hr class="border-light opacity-10">
+
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="text-light-gray small mb-0">&copy; 2026 <span class="text-white fw-bold">Smart Budget Team
+                        13</span>. All rights reserved.</p>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
+                        <a href="#" class="text-light-gray text-decoration-none small me-3 hover-white">Documentation</a>
+                        <a href="#" class="text-light-gray text-decoration-none small hover-white">Privacy</a>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-4 mb-3">
-                <h6>Legal</h6>
-                <ul class="list-unstyled small">
-                    <li><a href="#" class="text-muted text-decoration-none">Privacy Policy</a></li>
-                    <li><a href="#" class="text-muted text-decoration-none">Terms of Service</a></li>
-                </ul>
-            </div>
-        </div>
-        <hr class="bg-secondary">
-        <div class="text-center small text-muted">
-            <p>&copy; 2026 Smart Budget. All rights reserved.</p>
-        </div>
-    </div>
-</footer>
+        </footer>
+
+
 
 <style>
+    :root {
+        --primary-blue: #0D6EFD;
+        --deep-navy: #0a192f;
+    }
+
     .hero-section {
-        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        background: radial-gradient(circle at top right, #f8f9ff 0%, #ffffff 100%);
+        overflow: hidden;
+        padding-top: 40px;
     }
 
-    .feature-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    .gradient-text {
+        background: linear-gradient(90deg, #0D6EFD, #6610f2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
-    .feature-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    .bg-glass {
+        background: rgba(13, 110, 253, 0.1);
+        color: var(--primary-blue);
+        border: 1px solid rgba(13, 110, 253, 0.2);
     }
 
-    .feature-icon {
-        transition: transform 0.3s ease;
+    .premium-card {
+        border: 1px solid #f0f0f0;
+        border-radius: 1.25rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: #fff;
     }
 
-    .feature-card:hover .feature-icon {
-        transform: scale(1.1);
+    .premium-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+        border-color: var(--primary-blue);
     }
+
+    .icon-box {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-size: 1.5rem;
+    }
+
+    .bg-blue-light { background: #e7f0ff; }
+    .bg-green-light { background: #eafff0; }
+    .bg-purple-light { background: #f3eaff; }
+    .bg-gold-light { background: #fff9e6; }
+
+    @* .footer-premium {
+        border-top: 1px solid #333;
+    } *@
+
+    .floating {
+        animation: floating 3s ease-in-out infinite;
+    }
+
+    @@keyframes floating {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+        100% { transform: translateY(0px); }
+    }
+
+    .min-vh-75 { min-height: 75vh; }
+    
+    .stats-bar {
+        margin-top: -50px;
+        position: relative;
+        z-index: 10;
+    }
+
+            /*  Visibility Styles */
+            .footer-modern {
+                background-color: #0d1117;
+                /* GitHub-style deep dark */
+                border-top: 1px solid rgba(255, 255, 255, 0.05);
+            }
+
+            .text-light-gray {
+                color: #adb5bd !important;
+                /* Standard Bootstrap gray-500 for better visibility */
+            }
+
+            .text-primary {
+                color: #0d6efd !important;
+                /* Ensure primary blue is vibrant */
+            }
+
+            .tracking-widest {
+                letter-spacing: 0.1em;
+            }
+
+            .bg-glass-dark {
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+            }
+
+            .logo-dot {
+                width: 12px;
+                height: 12px;
+                background-color: #0d6efd;
+                border-radius: 50%;
+            }
+
+            .hover-white:hover {
+                color: white !important;
+                transition: 0.2s ease;
+            }
+
+            .contributor-link {
+                display: flex;
+                align-items: center;
+                text-decoration: none;
+            }
+
+
+
+
+
+
 </style>
 
 @code {
