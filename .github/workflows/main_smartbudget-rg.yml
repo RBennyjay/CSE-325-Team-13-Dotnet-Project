@@ -20,14 +20,14 @@ jobs:
           dotnet-version: '10.x'
 
       - name: Restore dependencies
-        # This points exactly to your subdirectory and project file
-        run: dotnet restore ./CSE-325-Team-13-Dotnet-Project/SmartBudget.csproj
+        # If the file is in the root, this is the correct syntax
+        run: dotnet restore SmartBudget.csproj 
 
       - name: Build with dotnet
-        run: dotnet build ./CSE-325-Team-13-Dotnet-Project/SmartBudget.csproj --configuration Release --no-restore
+        run: dotnet build SmartBudget.csproj --configuration Release --no-restore
 
       - name: dotnet publish
-        run: dotnet publish ./CSE-325-Team-13-Dotnet-Project/SmartBudget.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish SmartBudget.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -63,5 +63,6 @@ jobs:
           app-name: 'smartbudget-rg'
           slot-name: 'Production'
           package: .
+
 
 
