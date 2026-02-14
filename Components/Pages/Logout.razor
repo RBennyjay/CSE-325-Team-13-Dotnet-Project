@@ -1,0 +1,30 @@
+@page "/Account/Logout"
+@using Microsoft.AspNetCore.Identity
+@using SmartBudget.Data
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager NavigationManager
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 50vh;">
+    <div class="text-center">
+        <div class="spinner-border text-primary mb-3" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <h4 class="fw-bold">Signing you out...</h4>
+        <p class="text-muted">Please wait while we secure your session.</p>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // 1. Give the UI a moment to show the message (e.g., 1.5 seconds)
+        await Task.Delay(1500);
+
+        // 2. Perform the actual sign out
+        await SignInManager.SignOutAsync();
+
+        // 3. Redirect to home.
+        // forceLoad: true ensures the browser clears any cached state
+        NavigationManager.NavigateTo("/", forceLoad: true);
+    }
+}

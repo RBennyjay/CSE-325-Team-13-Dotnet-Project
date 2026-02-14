@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace SmartBudget.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class InitialRealFix : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -164,7 +166,7 @@ namespace SmartBudget.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Color = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -188,7 +190,7 @@ namespace SmartBudget.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Source = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -213,7 +215,7 @@ namespace SmartBudget.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
                     LimitAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Month = table.Column<int>(type: "int", nullable: false),
@@ -244,7 +246,7 @@ namespace SmartBudget.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -267,6 +269,24 @@ namespace SmartBudget.Migrations
                         principalTable: "Categories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUsers",
+                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "CreatedAt", "Email", "EmailConfirmed", "LastLogin", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                values: new object[] { "dev-user-123", 0, "8de62ced-c619-4eea-9032-998db4b61524", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "dev@example.com", true, null, false, null, "DEV@EXAMPLE.COM", "DEV@EXAMPLE.COM", "AQAAAAIAAYagAAAAEOf6k1G5fHk9pQp7zXmR1Q==", null, false, "77379761-1934-4286-9173-63327668581e", false, "dev@example.com" });
+
+            migrationBuilder.InsertData(
+                table: "Categories",
+                columns: new[] { "Id", "Color", "CreatedAt", "Description", "Name", "UpdatedAt", "UserId" },
+                values: new object[,]
+                {
+                    { 1, "#FF5733", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "Food & Drinks", null, "dev-user-123" },
+                    { 2, "#33FF57", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "Transport", null, "dev-user-123" },
+                    { 3, "#3357FF", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "Rent & Utilities", null, "dev-user-123" },
+                    { 4, "#F333FF", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "Entertainment", null, "dev-user-123" },
+                    { 5, "#FF3380", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "Shopping", null, "dev-user-123" },
+                    { 6, "#33FFF5", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "Health", null, "dev-user-123" }
                 });
 
             migrationBuilder.CreateIndex(

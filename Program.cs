@@ -4,7 +4,7 @@ using SmartBudget.Components;
 using SmartBudget.Data;
 using SmartBudget.Models;
 using SmartBudget.Repositories;
-// ADD THESE TWO LINES:
+
 using SmartBudget.Interfaces;
 using SmartBudget.Services;
 //account
@@ -21,9 +21,17 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-// Configure SQL Server connection
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+// // Configure SQL Server connection
+// builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//     options.UseSqlServer(connectionString));
+
+// Configure SQL Server connection with Factory support
+builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+// This line ensures Identity and Scoped services can still use the context normally
+builder.Services.AddScoped(p =>
+    p.GetRequiredService<IDbContextFactory<ApplicationDbContext>>().CreateDbContext());
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -36,6 +44,8 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 builder.Services.AddControllers();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddCascadingAuthenticationState();
 
 // Add repository services
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -72,4 +82,15 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.MapControllers();
 app.MapAdditionalIdentityEndpoints();
+
+
+// Automatically apply migrations to Azure SQL on startup
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    // This command creates the tables if they don't exist
+    context.Database.Migrate();
+}
+
 app.Run();
+

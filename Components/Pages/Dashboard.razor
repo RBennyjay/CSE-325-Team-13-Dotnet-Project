@@ -1,0 +1,219 @@
+@page "/dashboard"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using SmartBudget.Data
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject AuthenticationStateProvider AuthStateProvider
+@attribute [Authorize]
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Financial Overview</h2>
+        <span class="badge bg-primary-subtle text-primary px-3 py-2">@DateTime.Now.ToString("MMMM yyyy")</span>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 h-100">
+                <small class="text-muted text-uppercase fw-bold">Total Income</small>
+                <h3 class="text-success fw-bold">@TotalIncome.ToString("C")</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 h-100">
+                <small class="text-muted text-uppercase fw-bold">Total Expenses</small>
+                <h3 class="text-danger fw-bold">@TotalExpenses.ToString("C")</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 bg-primary text-white h-100">
+                <small class="text-white-50 text-uppercase fw-bold">Net Balance</small>
+                <h3 class="text-white fw-bold">@NetBalance.ToString("C")</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0">Budget Utilization</h6>
+                    <span class="badge @(BudgetUtilization > 90 ? "bg-danger" : "bg-success")">
+                        @BudgetUtilization.ToString("F1")% Used
+                    </span>
+                </div>
+                <div class="progress" style="height: 12px;">
+                    <div class="progress-bar @(BudgetUtilization > 90 ? "bg-danger" : "bg-primary")" role="progressbar"
+                         style="width: @(BudgetUtilization > 100 ? 100 : BudgetUtilization)%"
+                         aria-valuenow="@BudgetUtilization" aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between mt-2">
+                    <small class="text-muted">Spent: @TotalExpenses.ToString("C")</small>
+                    <small class="text-muted">Limit: @TotalBudgetLimit.ToString("C")</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0">Monthly Savings Goal</h6>
+                    <span class="text-primary fw-bold">@SavingsProgress.ToString("F1")%</span>
+                </div>
+                <div class="progress" style="height: 12px;">
+                    <div class="progress-bar bg-success" role="progressbar"
+                         style="width: @(SavingsProgress > 100 ? 100 : SavingsProgress)%"
+                         aria-valuenow="@SavingsProgress" aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between mt-2">
+                    <small class="text-muted">Saved: @NetBalance.ToString("C")</small>
+                    <small class="text-muted">Goal: @MonthlySavingsGoal.ToString("C")</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (TotalIncome == 0 && TotalExpenses == 0)
+    {
+        <div class="card border-0 shadow-sm p-5 text-center">
+            <div class="mb-3" style="font-size: 3rem;">🚀</div>
+            <h4>Welcome to your new Dashboard</h4>
+            <p class="text-muted">Start by adding your first record to see the data appear here.</p>
+            <div class="d-flex justify-content-center gap-3 mt-3">
+                <a href="/income" class="btn btn-outline-primary">+ Add Income</a>
+                <a href="/expenses" class="btn btn-outline-danger">+ Add Expense</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0">Recent Transactions</h5>
+                        <a href="/expenses" class="btn btn-sm btn-outline-secondary">View All</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-muted small">
+                                <tr>
+                                    <th class="ps-4">DATE</th>
+                                    <th>DESCRIPTION</th>
+                                    <th>CATEGORY</th>
+                                    <th class="text-end pe-4">AMOUNT</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var transaction in RecentTransactions)
+                                {
+                                    <tr>
+                                        <td class="ps-4 text-muted small">@transaction.Date.ToShortDateString()</td>
+                                        <td class="fw-medium">@transaction.Description</td>
+                                        <td>
+                                            <span class="badge rounded-pill bg-secondary-subtle text-secondary px-3">
+                                                @transaction.CategoryName
+                                            </span>
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            <span class="@(transaction.IsIncome ? "text-success" : "text-danger") fw-bold">
+                                                @(transaction.IsIncome ? "+" : "-") @transaction.Amount.ToString("C")
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private decimal TotalIncome { get; set; }
+    private decimal TotalExpenses { get; set; }
+    private decimal TotalBudgetLimit { get; set; }
+    private decimal MonthlySavingsGoal { get; set; } = 1000;
+
+    private decimal NetBalance => TotalIncome - TotalExpenses;
+    private decimal BudgetUtilization => TotalBudgetLimit > 0 ? (TotalExpenses / TotalBudgetLimit) * 100 : 0;
+    private decimal SavingsProgress => MonthlySavingsGoal > 0 ? (Math.Max(0, NetBalance) / MonthlySavingsGoal) * 100 : 0;
+
+    private List<TransactionViewModel> RecentTransactions = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // 1. Get the Current User ID
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var userId = user.FindFirst(c => c.Type.Contains("nameidentifier"))?.Value;
+
+        if (string.IsNullOrEmpty(userId)) return;
+
+        using var context = DbFactory.CreateDbContext();
+        var currentMonth = DateTime.Now.Month;
+        var currentYear = DateTime.Now.Year;
+
+        // 2. Calculate Totals (Filtered by UserId)
+        TotalIncome = await context.Incomes
+            .Where(i => i.UserId == userId)
+            .SumAsync(i => (decimal?)i.Amount) ?? 0;
+
+        TotalExpenses = await context.Expenses
+            .Where(e => e.UserId == userId)
+            .SumAsync(e => (decimal?)e.Amount) ?? 0;
+
+        TotalBudgetLimit = await context.Budgets
+            .Where(b => b.UserId == userId && b.Month == currentMonth && b.Year == currentYear)
+            .SumAsync(b => (decimal?)b.LimitAmount) ?? 0;
+
+        // 3. Fetch Recent Incomes (Filtered)
+        var recentIncomes = await context.Incomes
+            .Where(i => i.UserId == userId)
+            .OrderByDescending(i => i.Date)
+            .Take(5)
+            .Select(i => new TransactionViewModel
+            {
+                Date = i.Date,
+                Description = i.Description,
+                CategoryName = "Income",
+                Amount = i.Amount,
+                IsIncome = true
+            }).ToListAsync();
+
+        // 4. Fetch Recent Expenses (Filtered)
+        var recentExpenses = await context.Expenses
+            .Include(e => e.Category)
+            .Where(e => e.UserId == userId)
+            .OrderByDescending(e => e.Date)
+            .Take(5)
+            .Select(e => new TransactionViewModel
+            {
+                Date = e.Date,
+                Description = e.Description,
+                CategoryName = e.Category != null ? e.Category.Name : "General",
+                Amount = e.Amount,
+                IsIncome = false
+            }).ToListAsync();
+
+        // 5. Combine and Sort
+        RecentTransactions = recentIncomes.Concat(recentExpenses)
+            .OrderByDescending(t => t.Date)
+            .Take(5)
+            .ToList();
+    }
+
+    public class TransactionViewModel
+    {
+        public DateTime Date { get; set; }
+        public string Description { get; set; } = "";
+        public string CategoryName { get; set; } = "";
+        public decimal Amount { get; set; }
+        public bool IsIncome { get; set; }
+    }
+}
