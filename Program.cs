@@ -83,5 +83,14 @@ app.MapRazorComponents<App>()
 app.MapControllers();
 app.MapAdditionalIdentityEndpoints();
 
+
+// Automatically apply migrations to Azure SQL on startup
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    // This command creates the tables if they don't exist
+    context.Database.Migrate();
+}
+
 app.Run();
 
