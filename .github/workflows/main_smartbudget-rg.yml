@@ -11,27 +11,23 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-
-    steps:
+   steps:
       - uses: actions/checkout@v4
 
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0' # Changed to 9 for better Azure Free Tier compatibility
+          dotnet-version: '10.x'
 
       - name: Restore dependencies
-        # If your .csproj is in a folder, change the path here
-        run: dotnet restore **/*.csproj 
+        # This points exactly to your subdirectory and project file
+        run: dotnet restore ./CSE-325-Team-13-Dotnet-Project/SmartBudget.csproj
 
       - name: Build with dotnet
-        # Using **/*.csproj tells dotnet to find the project file, 
-        # but if you have TWO, replace the ** with the specific folder name.
-        run: dotnet build **/*.csproj --configuration Release --no-restore
+        run: dotnet build ./CSE-325-Team-13-Dotnet-Project/SmartBudget.csproj --configuration Release --no-restore
 
       - name: dotnet publish
-        # Make sure to point this exactly to your main Web App project
-        run: dotnet publish **/*.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish ./CSE-325-Team-13-Dotnet-Project/SmartBudget.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -67,3 +63,4 @@ jobs:
           app-name: 'smartbudget-rg'
           slot-name: 'Production'
           package: .
+
