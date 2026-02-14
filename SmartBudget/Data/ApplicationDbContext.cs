@@ -88,18 +88,18 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             NormalizedEmail = "DEV@EXAMPLE.COM",
             EmailConfirmed = true,
             PasswordHash = hasher.HashPassword(null!, "DevPassword123!"),
-            SecurityStamp = Guid.NewGuid().ToString(),
-            CreatedAt = DateTime.UtcNow
+            SecurityStamp = "70428f75-0a4c-4d73-8b65-51c963c7b53a", // Static GUID
+            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) // Static UTC DateTime
         });
 
         // 2. Seed Categories (Linked to devId)
         builder.Entity<Category>().HasData(
-            new Category { Id = 1, Name = "Food & Drinks", UserId = devId, Color = "#FF5733", CreatedAt = DateTime.UtcNow },
-            new Category { Id = 2, Name = "Transport", UserId = devId, Color = "#33FF57", CreatedAt = DateTime.UtcNow },
-            new Category { Id = 3, Name = "Rent & Utilities", UserId = devId, Color = "#3357FF", CreatedAt = DateTime.UtcNow },
-            new Category { Id = 4, Name = "Entertainment", UserId = devId, Color = "#F333FF", CreatedAt = DateTime.UtcNow },
-            new Category { Id = 5, Name = "Shopping", UserId = devId, Color = "#FF3380", CreatedAt = DateTime.UtcNow },
-            new Category { Id = 6, Name = "Health", UserId = devId, Color = "#33FFF5", CreatedAt = DateTime.UtcNow }
+            new Category { Id = 1, Name = "Food & Drinks", UserId = devId, Color = "#FF5733", CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new Category { Id = 2, Name = "Transport", UserId = devId, Color = "#33FF57", CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new Category { Id = 3, Name = "Rent & Utilities", UserId = devId, Color = "#3357FF", CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new Category { Id = 4, Name = "Entertainment", UserId = devId, Color = "#F333FF", CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new Category { Id = 5, Name = "Shopping", UserId = devId, Color = "#FF3380", CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new Category { Id = 6, Name = "Health", UserId = devId, Color = "#33FFF5", CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
         );
     }
 }
