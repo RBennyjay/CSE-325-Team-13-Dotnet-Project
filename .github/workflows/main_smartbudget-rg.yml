@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-   steps:
+    
+    steps: # Fixed: This must be aligned with 'runs-on' and 'permissions'
       - uses: actions/checkout@v4
 
       - name: Set up .NET Core
@@ -20,8 +21,7 @@ jobs:
           dotnet-version: '10.x'
 
       - name: Restore dependencies
-        # If the file is in the root, this is the correct syntax
-        run: dotnet restore SmartBudget.csproj 
+        run: dotnet restore SmartBudget.csproj
 
       - name: Build with dotnet
         run: dotnet build SmartBudget.csproj --configuration Release --no-restore
@@ -47,7 +47,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-          path: .  # Ensures files are extracted in the root for the deployer
+          path: . 
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -63,6 +63,3 @@ jobs:
           app-name: 'smartbudget-rg'
           slot-name: 'Production'
           package: .
-
-
-
