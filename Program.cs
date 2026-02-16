@@ -7,6 +7,8 @@ using SmartBudget.Repositories;
 
 using SmartBudget.Interfaces;
 using SmartBudget.Services;
+
+using System.Globalization;
 //account
 using Microsoft.AspNetCore.Components.Authorization;
 using SmartBudget.Components.Account;
@@ -21,9 +23,9 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-Console.WriteLine("===== CONNECTION STRING BEING USED =====");
-Console.WriteLine(connectionString);
-Console.WriteLine("=========================================");
+// Console.WriteLine("===== CONNECTION STRING BEING USED =====");
+// Console.WriteLine(connectionString);
+// Console.WriteLine("=========================================");
 
 // // Configure SQL Server connection
 // builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -63,6 +65,11 @@ builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IBudgetService, BudgetService>();
 builder.Services.AddScoped<IIncomeService, IncomeService>();
+
+
+var culture = new CultureInfo("en-US");
+CultureInfo.DefaultThreadCurrentCulture = culture;
+CultureInfo.DefaultThreadCurrentUICulture = culture;
 
 
 var app = builder.Build();
